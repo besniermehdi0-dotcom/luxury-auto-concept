@@ -25,6 +25,18 @@
     io.observe(el);
   };
 
+  let lenisRef = null; // set once the motion layer loads; native scrolling until then
+  const scrollToEl = (el, block = 'start') => {
+    if (!el) return;
+    if (lenisRef) {
+      const h = el.getBoundingClientRect().height;
+      const offset = block === 'center' ? -Math.max(72, (innerHeight - h) / 2) : -72;
+      lenisRef.scrollTo(el, { offset, duration: 1 });
+    } else {
+      el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block });
+    }
+  };
+
   /* ---------- Reveal + counters ---------- */
   const revealIO = 'IntersectionObserver' in window ? new IntersectionObserver((es) => {
     es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); revealIO.unobserve(e.target); } });
@@ -80,9 +92,9 @@
   };
   const PANELS = [
     { id: 'fb', name: 'Front bumper', d: 'M0 0 H420 V108 C360 90 290 74 210 72 C130 74 60 90 0 108 Z' },
-    { id: 'wfl', name: 'Front left wing', d: L.wing },
+    { id: 'wfl', name: 'Front left fender', d: L.wing },
     { id: 'bon', name: 'Bonnet', d: 'M118 82 C150 74 180 72 210 72 C240 72 270 74 302 82 C312 160 318 230 320 296 L100 296 C102 230 108 160 118 82 Z' },
-    { id: 'wfr', name: 'Front right wing', d: mirrorX(L.wing) },
+    { id: 'wfr', name: 'Front right fender', d: mirrorX(L.wing) },
     { id: 'dfl', name: 'Front left door', d: L.dfront },
     { id: 'dfr', name: 'Front right door', d: mirrorX(L.dfront) },
     { id: 'roof', name: 'Roof', d: 'M130 388 C134 460 134 520 130 588 L290 588 C286 520 286 460 290 388 Z' },
@@ -225,8 +237,9 @@
     });
     chipRow.appendChild(b);
   });
-  [model, year].forEach((i) => i.addEventListener('input', renderMessage));
+  // The digit filter must run before the message is rebuilt, or the message keeps the stray characters.
   year.addEventListener('input', () => { year.value = year.value.replace(/\D/g, '').slice(0, 4); });
+  [model, year].forEach((i) => i.addEventListener('input', renderMessage));
 
   function renderCard() {
     list.innerHTML = '';
@@ -285,33 +298,63 @@
     }
   }
   send.addEventListener('click', (e) => {
-    if (send.getAttribute('aria-disabled') === 'true') {
-      e.preventDefault();
-      setReadout();
-      readout.innerHTML = '<b>Mark a panel first</b>';
-      const first = $('.panel', car);
-      first && first.focus({ preventScroll: true });
-    }
+    if (send.getAttribute('aria-disabled') !== 'true') return;
+    e.preventDefault();
+    // Focus first (its handler writes the panel name), then the hint, then bring the car into view.
+    const first = $('.panel', car);
+    if (first) first.focus({ preventScroll: true });
+    readout.innerHTML = '<b>Mark a panel on the car first</b>';
+    scrollToEl($('[data-car-stage]'), 'center');
   });
   renderCard();
 
   /* ---------- Repair tracker ---------- */
+  /* The estimate card is always in the layout and only changes state, so nothing below it
+     moves when the demo reaches the approval step. Days run Saturday to Wednesday: the garage
+     is open Saturday to Thursday. */
   const STAGES = [
-    { label: 'Checked in', time: 'Mon 09:10', msg: '<b>Checked in at Bay 4.</b> Arrival photos sent to your WhatsApp.' },
-    { label: 'Inspected', time: 'Mon 11:35', msg: '<b>Inspection done.</b> Front bumper, right headlight and right wing. Findings and photos sent.' },
-    { label: 'Your approval', time: 'Mon 14:02', approval: true, msg: '<b>You approved the estimate</b> on your phone at 14:02. Work starts.' },
-    { label: 'Parts', time: 'Tue 10:20', msg: '<b>Genuine parts ordered.</b> Headlight and brackets arrive Wednesday morning.' },
-    { label: 'Bodywork', time: 'Wed 15:40', msg: '<b>Bumper repaired and refitted.</b> Panel gaps checked.' },
-    { label: 'Paint', time: 'Thu 12:05', msg: '<b>In the paint booth.</b> Colour matched to the original paint code.' },
-    { label: 'Quality check', time: 'Fri 10:30', msg: '<b>Road test and forty-point check passed.</b>' },
-    { label: 'Ready', time: 'Fri 16:00', msg: '<b>Ready for collection.</b> Washed and waiting at the front desk.' },
+    { label: 'Checked in', time: 'Sat 09:10', msg: '<b>Checked in at Bay 4.</b> Arrival photos sent to your WhatsApp.' },
+    { label: 'Inspected', time: 'Sat 11:35', msg: '<b>Inspection done.</b> Front bumper, right headlight and right fender. Findings and photos sent.' },
+    { label: 'Your approval', time: 'Sat 14:02', approval: true, msg: '<b>You approved the estimate</b> on your phone at 14:02. Work starts.' },
+    { label: 'Parts', time: 'Sun 10:20', msg: '<b>Genuine parts ordered.</b> Headlight and brackets arrive Monday morning.' },
+    { label: 'Bodywork', time: 'Mon 15:40', msg: '<b>Bumper repaired and refitted.</b> Panel gaps checked.' },
+    { label: 'Paint', time: 'Tue 12:05', msg: '<b>In the paint booth.</b> Colour matched to the original paint code.' },
+    { label: 'Quality check', time: 'Wed 10:30', msg: '<b>Road test and forty-point check passed.</b>' },
+    { label: 'Ready', time: 'Wed 16:00', msg: '<b>Ready for collection.</b> Washed and ready to drive away.' },
   ];
+  const EST_TITLE = {
+    pending: 'Estimate, sent after inspection',
+    awaiting: 'Estimate ready. Nothing starts until you approve.',
+    call: 'Waiting for your call. Nothing is touched until you approve.',
+    approved: 'Estimate approved Sat 14:02',
+    done: 'Estimate approved Sat 14:02',
+  };
   const rail = $('[data-rail]');
   const detail = $('[data-detail]');
   const tracker = $('[data-tracker]');
+  const est = $('[data-estimate]');
+  const estTitle = $('[data-est-title]');
+  const approveBtn = $('[data-approve]', est);
+  const callBtn = $('[data-callme]', est);
+  const replayBtn = $('[data-replay]', est);
   let step = -1;
   let timer = 0;
   let approved = false;
+  let called = false;
+  function setEst(state) {
+    est.className = `estimate is-${state}`;
+    estTitle.textContent = EST_TITLE[state];
+    approveBtn.disabled = !(state === 'awaiting' || state === 'call');
+    callBtn.disabled = state !== 'awaiting';
+    replayBtn.hidden = state !== 'done';
+  }
+  approveBtn.addEventListener('click', () => { approved = true; showStage(); });
+  callBtn.addEventListener('click', () => {
+    called = true;
+    setEst('call');
+    detail.innerHTML = '<b>Your service advisor will call you.</b> The car waits until you approve.';
+  });
+  replayBtn.addEventListener('click', () => start());
 
   STAGES.forEach((s) => {
     const li = document.createElement('li');
@@ -330,57 +373,31 @@
   }
 
   function showStage() {
+    clearTimeout(timer);
     const s = STAGES[step];
     paint();
     if (s.approval && !approved) {
-      detail.innerHTML = `
-        <div class="estimate">
-          <div>
-            <p class="msg"><b>Estimate ready. Nothing starts until you approve.</b></p>
-            <ul>
-              <li><span>Front bumper, repair and paint</span><span>AED 1,200</span></li>
-              <li><span>Right headlight, genuine part, fitted</span><span>AED 4,900</span></li>
-              <li><span>Right wing, repaint</span><span>AED 700</span></li>
-            </ul>
-            <p class="total">Total <b>AED 6,800</b> &nbsp;Sample figures, labour already 20% off for online booking.</p>
-          </div>
-          <div class="actions">
-            <button type="button" class="btn btn-primary" data-approve><i class="ph ph-check" aria-hidden="true"></i>Approve estimate</button>
-            <button type="button" class="btn btn-ghost" data-callme><i class="ph ph-phone" aria-hidden="true"></i>Call me first</button>
-          </div>
-        </div>`;
-      $('[data-approve]', detail).addEventListener('click', approve);
-      $('[data-callme]', detail).addEventListener('click', () => {
-        detail.innerHTML = `<p class="msg"><b>Your service advisor will call you.</b> The car waits. Nothing is touched until you approve.</p>
-          <button type="button" class="btn btn-primary" data-approve style="justify-self:start"><i class="ph ph-check" aria-hidden="true"></i>Approve now</button>`;
-        $('[data-approve]', detail).addEventListener('click', approve);
-      });
+      if (!called) {
+        setEst('awaiting');
+        detail.innerHTML = '<b>Estimate sent to your phone.</b> Approve it, or ask for a call first.';
+      }
       return;
     }
-    detail.innerHTML = `<p class="msg">${s.msg}</p>`;
-    if (step === STAGES.length - 1) {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'replay';
-      b.textContent = 'Replay the sample job';
-      b.addEventListener('click', start);
-      detail.appendChild(b);
-      return;
-    }
+    detail.innerHTML = s.msg;
+    const last = step === STAGES.length - 1;
+    setEst(approved ? (last ? 'done' : 'approved') : 'pending');
+    if (last) return;
     timer = setTimeout(() => { step++; showStage(); }, reduce ? 200 : 1150);
-  }
-  function approve() {
-    approved = true;
-    showStage();
   }
   function start() {
     clearTimeout(timer);
     approved = false;
+    called = false;
     step = 0;
     showStage();
   }
   paint();
-  detail.innerHTML = '<p class="msg">Loading the sample job.</p>';
+  setEst('pending');
   onceVisible(tracker, start, 0.35);
   $('[data-track-form]').addEventListener('submit', (e) => { e.preventDefault(); start(); });
 
@@ -390,63 +407,27 @@
     'https://luxury-auto-service.com/wp-content/uploads/2024/07/s2.jpg',
     'https://luxury-auto-service.com/wp-content/uploads/2024/07/s3.jpg',
   ];
-  const ba = $('[data-ba]');
-  const before = $('[data-ba-before]');
-  const after = $('[data-ba-after]');
-  const handle = $('[data-ba-handle]');
-  let pos = 50;
-  const setPos = (p) => {
-    pos = Math.max(0, Math.min(100, p));
-    ba.style.setProperty('--x', `${pos}%`);
-    handle.setAttribute('aria-valuenow', String(Math.round(pos)));
-  };
+  /* Side by side, not a wipe: each composite's two halves are shot from different angles,
+     so a divider across them joins two unrelated frames. */
+  const pair = $('[data-pair]');
+  const before = $('[data-before]');
+  const after = $('[data-after]');
+  const tabs = $$('[data-case]');
   const setCase = (i) => {
     const url = `url("${CASES[i]}")`;
     before.style.backgroundImage = url;
     after.style.backgroundImage = url;
-    $$('[data-case]').forEach((b) => b.setAttribute('aria-selected', String(+b.dataset.case === i)));
-  };
-  const sweep = () => {
-    if (reduce) return;
-    const keys = [[0, 50], [500, 22], [1150, 78], [1700, 50]];
-    const t0 = performance.now();
-    const tick = (t) => {
-      const e = t - t0;
-      let k = 0;
-      while (k < keys.length - 2 && e > keys[k + 1][0]) k++;
-      const [ta, va] = keys[k];
-      const [tb, vb] = keys[k + 1];
-      const p = Math.min(1, Math.max(0, (e - ta) / (tb - ta)));
-      const s = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
-      setPos(va + (vb - va) * s);
-      if (e < keys[keys.length - 1][0]) requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
+    tabs.forEach((b) => {
+      const on = +b.dataset.case === i;
+      b.setAttribute('aria-selected', String(on));
+      b.tabIndex = on ? 0 : -1;
+    });
+    pair.setAttribute('aria-labelledby', `case-${i}`);
+    if (!reduce && pair.animate) pair.animate([{ opacity: 0.25 }, { opacity: 1 }], { duration: 380, easing: 'ease-out' });
   };
   setCase(0);
-  setPos(50);
-  const fromEvent = (e) => {
-    const r = ba.getBoundingClientRect();
-    setPos(((e.clientX - r.left) / r.width) * 100);
-  };
-  ba.addEventListener('pointerdown', (e) => {
-    ba.setPointerCapture(e.pointerId);
-    fromEvent(e);
-    const move = (ev) => fromEvent(ev);
-    const up = () => { ba.removeEventListener('pointermove', move); ba.removeEventListener('pointerup', up); ba.removeEventListener('pointercancel', up); };
-    ba.addEventListener('pointermove', move);
-    ba.addEventListener('pointerup', up);
-    ba.addEventListener('pointercancel', up);
-  });
-  handle.addEventListener('keydown', (e) => {
-    const k = { ArrowLeft: -5, ArrowDown: -5, ArrowRight: 5, ArrowUp: 5 }[e.key];
-    if (k) { e.preventDefault(); setPos(pos + k); }
-    if (e.key === 'Home') { e.preventDefault(); setPos(0); }
-    if (e.key === 'End') { e.preventDefault(); setPos(100); }
-  });
-  const tabs = $$('[data-case]');
   tabs.forEach((b, i) => {
-    b.addEventListener('click', () => { setCase(i); setPos(50); sweep(); });
+    b.addEventListener('click', () => setCase(i));
     b.addEventListener('keydown', (e) => {
       const d = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[e.key];
       if (!d) return;
@@ -456,7 +437,6 @@
       n.click();
     });
   });
-  onceVisible(ba, sweep, 0.6);
 
   /* ---------- Service strips ---------- */
   const strips = $$('.strip');
@@ -504,13 +484,6 @@
     });
   }
 
-  /* ---------- Notes dialog ---------- */
-  const notes = $('[data-notes]');
-  $$('[data-open-notes]').forEach((b) => b.addEventListener('click', () => {
-    if (typeof notes.showModal === 'function') notes.showModal(); else notes.setAttribute('open', '');
-  }));
-  notes.addEventListener('click', (e) => { if (e.target === notes) notes.close(); });
-
   /* ---------- Motion layer (optional) ---------- */
   if (reduce) return;
   const load = (src) => new Promise((res, rej) => {
@@ -534,10 +507,12 @@
 
     if (Lenis && !matchMedia('(pointer: coarse)').matches) {
       const lenis = new Lenis({ lerp: 0.11, smoothWheel: true });
+      lenisRef = lenis;
       lenis.on('scroll', ScrollTrigger.update);
       gsap.ticker.add((t) => lenis.raf(t * 1000));
       gsap.ticker.lagSmoothing(0);
-      $$('a[href^="#"]').forEach((a) => a.addEventListener('click', (e) => {
+      // The skip link keeps native behaviour so keyboard focus actually moves into the page.
+      $$('a[href^="#"]:not(.skip)').forEach((a) => a.addEventListener('click', (e) => {
         const id = a.getAttribute('href') || '';
         if (!id.startsWith('#') || id.length < 2 || a.getAttribute('aria-disabled') === 'true') return;
         const t = $(id);
