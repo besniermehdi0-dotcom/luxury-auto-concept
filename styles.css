@@ -21,7 +21,10 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; }
-html { scroll-padding-top: calc(var(--nav-h) + 16px); -webkit-text-size-adjust: 100%; }
+/* overflow-anchor off: Chrome's scroll anchoring picks a node inside a parallax layer,
+   compensates for its transform and drags the page down on load (seen live 2026-11-16). */
+html { scroll-padding-top: calc(var(--nav-h) + 16px); -webkit-text-size-adjust: 100%; overflow-anchor: none; }
+body { overflow-anchor: none; }
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
 body {
