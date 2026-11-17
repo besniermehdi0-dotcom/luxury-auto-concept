@@ -10,18 +10,20 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="Luxury Auto Service Centre, a website concept">
 <meta property="og:description" content="Agency standard. Without the agency. Tap the damage and ask for a price, or book a service, on WhatsApp.">
-<meta property="og:image" content="https://images.unsplash.com/photo-1486006920555-c77dcf18193c?auto=format&fit=crop&w=1200&h=630&q=80">
+<meta property="og:image" content="https://besniermehdi0-dotcom.github.io/luxury-auto-concept/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23d8312b'/%3E%3Ctext x='32' y='43' font-family='Arial Black,Arial' font-weight='900' font-size='28' text-anchor='middle' fill='%23f4f4f2'%3ELA%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://images.unsplash.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <!-- Icon font loads without blocking first paint; the icons are decoration, every control has a text label. -->
 <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css"></noscript>
-<link rel="preload" as="image" href="https://images.unsplash.com/photo-1486006920555-c77dcf18193c?auto=format&fit=crop&w=2000&q=78" imagesrcset="https://images.unsplash.com/photo-1486006920555-c77dcf18193c?auto=format&fit=crop&w=900&q=75 900w, https://images.unsplash.com/photo-1486006920555-c77dcf18193c?auto=format&fit=crop&w=1400&q=78 1400w, https://images.unsplash.com/photo-1486006920555-c77dcf18193c?auto=format&fit=crop&w=2000&q=78 2000w, https://images.unsplash.com/photo-1486006920555-c77dcf18193c?auto=format&fit=crop&w=2800&q=78 2800w" imagesizes="100vw">
-<link rel="stylesheet" href="styles.css?v=11">
+<link rel="preload" as="image" href="frames/main/f001.webp" media="(min-aspect-ratio: 4/5)" fetchpriority="high">
+<link rel="preload" as="image" href="frames/portrait_s/p001.webp" media="(max-aspect-ratio: 4/5)" fetchpriority="high">
+<link rel="stylesheet" href="styles.css?v=13">
 <script>document.documentElement.classList.add('js');setTimeout(function(){if(!window.__app)document.documentElement.classList.remove('js')},3000);</script>
 </head>
 <body>
@@ -53,22 +55,59 @@
 <main id="main">
 
 <!-- HERO -->
-<section class="hero" id="top">
-  <div class="hero-media" data-hero-media>
-    <img
-      src="https://images.unsplash.com/photo-1486006920555-c77dcf18193c?auto=format&fit=crop&w=2000&q=78"
-      srcset="https://images.unsplash.com/photo-1486006920555-c77dcf18193c?auto=format&fit=crop&w=900&q=75 900w, https://images.unsplash.com/photo-1486006920555-c77dcf18193c?auto=format&fit=crop&w=1400&q=78 1400w, https://images.unsplash.com/photo-1486006920555-c77dcf18193c?auto=format&fit=crop&w=2000&q=78 2000w, https://images.unsplash.com/photo-1486006920555-c77dcf18193c?auto=format&fit=crop&w=2800&q=78 2800w"
-      sizes="100vw" alt="A classic car with its tail lights on, parked in a dim workshop under a fluorescent tube" fetchpriority="high" decoding="async">
-  </div>
-  <div class="hero-shade" aria-hidden="true"></div>
-  <div class="hero-copy wrap">
-    <h1 class="hero-title"><span class="line"><span>Agency standard.</span></span><span class="line"><span>Without the agency.</span></span></h1>
-    <p class="hero-sub">Classic, American, European and luxury cars, repaired, serviced and painted since 2006.</p>
-    <div class="hero-ctas">
-      <a class="btn btn-primary" href="#damage">Mark the damage <i class="ph ph-arrow-down-right" aria-hidden="true"></i></a>
-      <a class="btn btn-ghost" href="#service"><i class="ph ph-wrench" aria-hidden="true"></i>Book a service</a>
+<!-- HERO FILM: one car, one bay, scrubbed by scroll from check-in to ready.
+     A Blender render of a stand-in car (credit in the footer), not a photo of his workshop. -->
+<section class="film" id="top" data-film-section aria-label="A sample repair, from check-in to ready, rendered for this concept">
+  <div class="film-stage">
+    <picture>
+      <source media="(max-aspect-ratio: 4/5)" srcset="frames/portrait_s/p001.webp">
+      <img class="film-poster" data-poster src="frames/main/f001.webp" alt="A red coupe in a dark workshop bay, its front left corner scraped and dented" fetchpriority="high" decoding="async">
+    </picture>
+    <canvas class="film-canvas" data-film aria-hidden="true"></canvas>
+    <div class="hero-shade" aria-hidden="true"></div>
+    <div class="film-copy wrap">
+      <div class="beat beat-hero is-on" data-beat="0">
+        <h1 class="hero-title"><span class="line"><span>Agency standard.</span></span><span class="line"><span>Without the agency.</span></span></h1>
+        <p class="hero-sub">Classic, American, European and luxury cars, repaired, serviced and painted since 2006.</p>
+        <div class="hero-ctas">
+          <a class="btn btn-primary" href="#damage">Mark the damage <i class="ph ph-arrow-down-right" aria-hidden="true"></i></a>
+          <a class="btn btn-ghost" href="#service"><i class="ph ph-wrench" aria-hidden="true"></i>Book a service</a>
+        </div>
+        <a class="hero-rating" href="https://maps.google.com/?cid=17301577613314053593" target="_blank" rel="noopener"><b>4.5</b><span class="pips" aria-hidden="true"><i></i><i></i><i></i><i></i><i class="half"></i></span><span>337 Google reviews</span></a>
+      </div>
+      <div class="beat" data-beat="1">
+        <p class="beat-label"><b>01</b>Check-in</p>
+        <h2 class="beat-title">Marked with you. Priced before work starts.</h2>
+        <p class="beat-text">Every scratch and dent is recorded at check-in, and nothing starts until you approve the estimate.</p>
+      </div>
+      <div class="beat" data-beat="2">
+        <p class="beat-label"><b>02</b>Bodywork</p>
+        <h2 class="beat-title">The dent comes out. The panel is prepared.</h2>
+        <p class="beat-text">Accident repair, denting and chassis repair.</p>
+      </div>
+      <div class="beat" data-beat="3">
+        <p class="beat-label"><b>03</b>Paint</p>
+        <h2 class="beat-title">Painted, then polished.</h2>
+        <p class="beat-text">Body paint, rim painting and polishing.</p>
+      </div>
+      <div class="beat" data-beat="4">
+        <p class="beat-label"><b>04</b>Ready</p>
+        <h2 class="beat-title">Ready to collect.</h2>
+        <p class="beat-text">Found us online? 20% off labour and 10% off parts.</p>
+        <div class="hero-ctas">
+          <a class="btn btn-primary" href="#damage">Mark the damage <i class="ph ph-arrow-down-right" aria-hidden="true"></i></a>
+          <a class="btn btn-ghost" href="#service"><i class="ph ph-wrench" aria-hidden="true"></i>Book a service</a>
+        </div>
+      </div>
     </div>
-    <a class="hero-rating" href="https://maps.google.com/?cid=17301577613314053593" target="_blank" rel="noopener"><b>4.5</b><span class="pips" aria-hidden="true"><i></i><i></i><i></i><i></i><i class="half"></i></span><span>337 Google reviews</span></a>
+    <ol class="film-rail" aria-hidden="true">
+      <li><span>Check-in</span><i></i></li>
+      <li><span>Bodywork</span><i></i></li>
+      <li><span>Paint</span><i></i></li>
+      <li><span>Ready</span><i></i></li>
+    </ol>
+    <p class="film-note" aria-hidden="true"><span data-film-load>Rendered sample repair</span></p>
+    <p class="film-cue" aria-hidden="true">Scroll to repair it</p>
   </div>
 </section>
 
@@ -394,7 +433,7 @@
 <section class="visit" id="visit" aria-labelledby="visit-title">
   <div class="wrap bento">
     <div class="cell cell-offer">
-      <img loading="lazy" decoding="async" alt="" src="https://images.unsplash.com/photo-1485291571150-772bcfc10da5?auto=format&fit=crop&w=1600&q=75">
+      <img loading="lazy" decoding="async" alt="" width="1600" height="900" src="stills/detail.webp">
       <div class="cell-offer-copy">
         <h2 id="visit-title" class="h2">Found us online? It costs less.</h2>
         <p class="offer"><span><b data-reveal>20%</b> off labour</span><span><b data-reveal>10%</b> off parts</span></p>
@@ -438,7 +477,7 @@
   <div class="wordmark" aria-hidden="true"><span data-wm>Luxury Auto</span></div>
   <div class="wrap foot-row">
     <p>Website concept for Luxury Auto Service Centre LLC, Dubai. Not the live site.</p>
-    <p>Concept by Mehdi Besnier, November 2026. Workshop photography from Unsplash as stand-ins; repair photos from luxury-auto-service.com.</p>
+    <p>Concept by Mehdi Besnier, November 2026. Repair photos from luxury-auto-service.com. The car is a stand-in, rendered in Blender from <a href="https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/CarConcept" target="_blank" rel="noopener">Car Concept</a> by Eric Chadwick, Darmstadt Graphics Group, under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>, with its logos removed and the damage added for this film.</p>
   </div>
 </footer>
 
@@ -449,6 +488,6 @@
   <a class="dock-icon" href="tel:+971501840030" aria-label="Call"><i class="ph ph-phone" aria-hidden="true"></i></a>
 </div>
 
-<script src="app.js?v=11" defer></script>
+<script src="app.js?v=13" defer></script>
 </body>
 </html>

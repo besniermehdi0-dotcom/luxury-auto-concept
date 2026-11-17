@@ -141,18 +141,56 @@ button, input { font: inherit; color: inherit; }
 @media (max-width: 1023px) { .nav-links { display: none; } }
 @media (max-width: 520px) { .nav-cta span { display: none; } .nav-cta { width: 40px; padding: 0; } }
 
-/* Hero */
-.hero { position: relative; min-height: 100svh; min-height: 100dvh; display: flex; align-items: flex-end; overflow: hidden; isolation: isolate; }
-.hero-media { position: absolute; inset: 0; z-index: -2; will-change: transform; }
-.hero-media img { width: 100%; height: 100%; object-fit: cover; object-position: 62% 50%; filter: saturate(.85) contrast(1.06); transform: scale(1.08); animation: heroIn 2.4s var(--ease) .1s forwards; }
-@keyframes heroIn { to { transform: scale(1); } }
+/* Hero film: a sticky stage scrubbed by scroll. Without JS it is one screen showing the first frame. */
+.film { position: relative; height: 100vh; height: 100svh; }
+html.js .film { height: 460vh; }
+.film-stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; isolation: isolate; background: #060708; }
+.film-poster, .film-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.film-poster { object-fit: cover; object-position: 62% 50%; }
+.film-canvas { z-index: 1; }
 .hero-shade {
-  position: absolute; inset: 0; z-index: -1;
+  position: absolute; inset: 0; z-index: 2; pointer-events: none;
   background:
-    linear-gradient(90deg, rgba(13, 14, 16, .92) 0%, rgba(13, 14, 16, .55) 42%, rgba(13, 14, 16, .05) 75%),
-    linear-gradient(0deg, rgba(13, 14, 16, 1) 0%, rgba(13, 14, 16, 0) 40%);
+    linear-gradient(90deg, rgba(6, 7, 8, .9) 0%, rgba(6, 7, 8, .5) 36%, rgba(6, 7, 8, 0) 62%),
+    linear-gradient(0deg, rgba(6, 7, 8, .95) 0%, rgba(6, 7, 8, 0) 38%),
+    linear-gradient(180deg, rgba(6, 7, 8, .6) 0%, rgba(6, 7, 8, 0) 18%);
 }
-.hero-copy { padding-top: calc(var(--nav-h) + 40px); padding-bottom: clamp(56px, 9vh, 104px); }
+.film-copy {
+  position: absolute; inset: 0; z-index: 3;
+  display: grid; align-items: end;
+  padding-top: calc(var(--nav-h) + 72px); padding-bottom: clamp(64px, 11vh, 120px);
+}
+/* Beats share one grid cell. visibility keeps a hidden beat's links out of the tab order and the accessibility tree. */
+.beat { grid-area: 1 / 1; max-width: 760px; opacity: 0; visibility: hidden; transform: translateY(18px); transition: opacity .35s var(--ease), transform .6s var(--ease), visibility 0s .35s; }
+.beat.is-on { opacity: 1; visibility: visible; transform: none; transition: opacity .6s var(--ease) .12s, transform .8s var(--ease) .12s, visibility 0s; }
+.beat-label { display: flex; align-items: baseline; gap: 12px; margin: 0 0 16px; font-family: var(--mono); font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: #c9cdd2; }
+.beat-label b { color: var(--accent-hi); font-weight: 500; }
+.beat-title { margin: 0 0 16px; max-width: 15ch; font-size: clamp(34px, 4.4vw, 68px); line-height: 1.02; font-weight: 800; font-variation-settings: "wdth" 112; letter-spacing: -.02em; text-wrap: balance; }
+.beat-text { margin: 0; max-width: 44ch; color: #c9cdd2; font-size: clamp(16px, 1.3vw, 19px); }
+.beat .hero-ctas { margin-top: 28px; }
+.beat:not(.beat-hero) .hero-ctas { opacity: 1; animation: none; }
+.film-rail { position: absolute; z-index: 3; top: calc(var(--nav-h) + 28px); right: var(--edge); display: flex; gap: 18px; margin: 0; padding: 0; list-style: none; }
+.film-rail li { display: grid; gap: 8px; font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); transition: color .3s; }
+.film-rail li.is-on { color: var(--text); }
+.film-rail i { display: block; width: 72px; height: 2px; background: rgba(236, 237, 238, .18); overflow: hidden; }
+.film-rail i::after { content: ""; display: block; height: 100%; background: var(--accent-hi); transform: scaleX(var(--f, 0)); transform-origin: left; }
+.film-note { position: absolute; z-index: 3; right: var(--edge); bottom: 22px; margin: 0; font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.film-cue { position: absolute; z-index: 3; left: 50%; bottom: 22px; margin: 0; transform: translateX(-50%); font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #c9cdd2; transition: opacity .4s; }
+.film-cue::after { content: ""; display: block; width: 1px; height: 22px; margin: 8px auto 0; background: linear-gradient(var(--text), transparent); animation: cue 1.8s var(--ease) infinite; transform-origin: top; }
+@keyframes cue { 0% { transform: scaleY(0); } 60% { transform: scaleY(1); opacity: 1; } 100% { transform: scaleY(1); opacity: 0; } }
+html:not(.js) .film-rail, html:not(.js) .film-cue { display: none; }
+/* Phones: the car sits in the upper half of the portrait film, the copy over the floor below it */
+@media (max-aspect-ratio: 4/5) {
+  .film-poster { object-position: 50% 50%; }
+  .hero-shade { background: linear-gradient(0deg, rgba(6, 7, 8, .96) 0%, rgba(6, 7, 8, .75) 34%, rgba(6, 7, 8, 0) 60%), linear-gradient(180deg, rgba(6, 7, 8, .55) 0%, rgba(6, 7, 8, 0) 16%); }
+  .film-copy { padding-bottom: 72px; }
+  .film-rail { left: var(--gutter); right: var(--gutter); top: calc(var(--nav-h) + 14px); gap: 8px; }
+  .film-rail li { flex: 1; font-size: 10px; letter-spacing: .06em; }
+  .film-rail i { width: 100%; }
+  .film-cue { display: none; }
+  .film-note { left: var(--gutter); right: auto; bottom: 20px; }
+  .beat-title { font-size: clamp(30px, 8.4vw, 40px); }
+}
 .hero-title {
   margin: 0 0 22px;
   font-size: clamp(42px, 6.3vw, 96px);
@@ -170,7 +208,6 @@ button, input { font: inherit; color: inherit; }
 @keyframes fade { to { opacity: 1; } }
 @media (max-width: 600px) {
   .hero-title { font-size: clamp(30px, 9vw, 42px); font-variation-settings: "wdth" 102; }
-  .hero-media img { object-position: 80% 50%; }
   .hero-sub { font-size: 16px; }
   .ribbon { font-size: 12px; gap: 10px; justify-content: space-between; text-align: left; }
   .ribbon .long, .concept-tag .long { display: none; }
@@ -494,6 +531,6 @@ button, input { font: inherit; color: inherit; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition-duration: .01ms !important; transition-delay: 0s !important; }
-  .hero-media img { transform: none; }
+  .film-cue::after { animation: none; }
   .js [data-reveal] { opacity: 1; transform: none; }
 }

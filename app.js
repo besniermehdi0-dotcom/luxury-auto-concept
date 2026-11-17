@@ -86,7 +86,6 @@
   /* ---------- Nav + dock ---------- */
   const nav = $('[data-nav]');
   const dock = $('[data-dock]');
-  const hero = $('.hero');
   const vis = { hero: true, damage: false, service: false, foot: false };
   const syncDock = () => {
     const on = !vis.hero && !vis.damage && !vis.service && !vis.foot;
@@ -94,11 +93,6 @@
     dock.inert = !on; // hidden off-screen, so it must not take keyboard focus
   };
   if ('IntersectionObserver' in window) {
-    new IntersectionObserver(([e]) => {
-      nav.classList.toggle('is-solid', e.intersectionRatio < 0.88);
-      vis.hero = e.intersectionRatio > 0.25;
-      syncDock();
-    }, { threshold: [0, 0.25, 0.88, 1] }).observe(hero);
     const mid = { threshold: 0, rootMargin: '-35% 0px -35% 0px' };
     new IntersectionObserver(([e]) => { vis.damage = e.isIntersecting; syncDock(); }, mid).observe($('#damage'));
     new IntersectionObserver(([e]) => { vis.service = e.isIntersecting; syncDock(); }, mid).observe($('#service'));
@@ -107,6 +101,178 @@
     dock.inert = false;
     dock.classList.add('is-on');
   }
+
+  /* ---------- Hero film ----------
+     One rendered car, scrubbed by scroll from check-in to ready (pipeline from the Ramla demo).
+     Frames download in film order and stay compressed; only a short run around the playhead is held decoded
+     as ImageBitmaps sized to the canvas, so a phone never holds the whole film in memory. */
+  const film = $('[data-film-section]');
+  const canvas = $('[data-film]');
+  const ctx = canvas.getContext('2d');
+  const poster = $('[data-poster]');
+  const loadEl = $('[data-film-load]');
+  const cueEl = $('.film-cue');
+  const beats = $$('.beat', film);
+  const railLis = $$('.film-rail li', film);
+  const clamp01 = (x) => Math.max(0, Math.min(1, x));
+  const portrait = matchMedia('(max-aspect-ratio: 4/5)').matches;
+  const dprCap = Math.min(devicePixelRatio || 1, 2);
+  const small = portrait && innerWidth * dprCap <= 1100;            // phones get the 1080 px portrait set
+  const DIR = portrait ? (small ? 'portrait_s' : 'portrait') : 'main';
+  const SRC_W = portrait ? (small ? 1080 : 1440) : 2560;
+  const SRC_H = portrait ? (small ? 1920 : 2560) : 1440;
+  const N = portrait ? 90 : 120;
+  const src = (i) => 'frames/' + DIR + '/' + (portrait ? 'p' : 'f') + String(i + 1).padStart(3, '0') + '.webp';
+  /* where each caption takes over, read off the rendered frames: damage close-up, dent pulled, primer starts to go, lights on */
+  const CUT = [0.16, 0.40, 0.64, 0.80];
+
+  let filmTop = 0, span = 1;
+  const measure = () => {
+    filmTop = film.getBoundingClientRect().top + scrollY;
+    span = Math.max(1, film.offsetHeight - innerHeight);
+  };
+
+  const frames = new Array(N), fstate = new Uint8Array(N);          // 0 not in yet, 1 in, 2 failed
+  let ready = 0, nextLoad = 0, settled = 0, inflight = 0;
+  let cur = 0, target = 0, raf = 0, dir = 1, snapped = false, idleT = 0, lastPos = -1;
+  const kick = () => { if (!raf) raf = requestAnimationFrame(tick); };
+  const settle = (i, ok) => {
+    fstate[i] = ok ? 1 : 2; settled++; inflight--;
+    while (ready < N && fstate[ready]) ready++;                     // the film plays only as far as the frames are in
+    loadEl.textContent = settled >= N ? 'Rendered sample repair' : 'Loading the film ' + Math.round(settled / N * 100) + '%';
+    pump();
+    if (Math.abs(i - cur) < 14) kick();
+  };
+  const loadFrame = (i) => {
+    const im = new Image();
+    let tries = 0;
+    im.onload = () => settle(i, true);
+    // a dropped request retries twice, then is skipped so the film and the loader never stick
+    im.onerror = () => { if (tries++ < 2) setTimeout(() => { im.src = src(i) + '?r=' + tries; }, 400 * tries); else settle(i, false); };
+    im.src = src(i);
+    frames[i] = im;
+  };
+  function pump() { while (inflight < 6 && nextLoad < N) { inflight++; loadFrame(nextLoad++); } }
+
+  const bmp = new Map(), pend = new Set();
+  const canBitmap = 'createImageBitmap' in window;
+  const AHEAD = small ? 8 : 10, BEHIND = 5, KEEP = small ? 10 : 12;
+  let cw = 0, ch = 0, gen = 0;                                      // gen changes with the canvas size, so late bitmaps of the old size are dropped
+  const decode = (i) => {
+    if (!canBitmap || fstate[i] !== 1 || bmp.has(i) || pend.has(i)) return;
+    pend.add(i);
+    const g = gen, im = frames[i];
+    const sc = Math.max(cw / im.naturalWidth, ch / im.naturalHeight);
+    const w = Math.round(im.naturalWidth * sc), h = Math.round(im.naturalHeight * sc);
+    const job = sc < 0.97
+      ? createImageBitmap(im, { resizeWidth: w, resizeHeight: h, resizeQuality: 'high' }).catch(() => createImageBitmap(im))
+      : createImageBitmap(im);
+    job.then((b) => {
+      pend.delete(i);
+      if (g !== gen || Math.abs(i - cur) > KEEP) { b.close(); return; }
+      const old = bmp.get(i); if (old) old.close();
+      bmp.set(i, b);
+      if (Math.abs(i - cur) < 2.5) kick();
+    }).catch(() => pend.delete(i));
+  };
+  const windowAt = (c) => {
+    const lo = Math.max(0, c - (dir > 0 ? BEHIND : AHEAD)), hi = Math.min(N - 1, c + (dir > 0 ? AHEAD : BEHIND));
+    for (let d = 0; d <= AHEAD; d++) {                              // nearest frames first
+      if (c + d <= hi) decode(c + d);
+      if (d && c - d >= lo) decode(c - d);
+    }
+    for (const [i, b] of bmp) if (Math.abs(i - c) > KEEP) { b.close(); bmp.delete(i); }
+  };
+  // the picture for frame k: its bitmap, else a ready bitmap a frame or two away, else the undecoded image itself
+  const pick = (k) => {
+    if (bmp.has(k)) return bmp.get(k);
+    for (let d = 1; d <= 2; d++) { if (bmp.has(k - d)) return bmp.get(k - d); if (bmp.has(k + d)) return bmp.get(k + d); }
+    if (fstate[k] === 1) return frames[k];
+    for (let d = 1; d < N; d++) { if (k - d >= 0 && fstate[k - d] === 1) return frames[k - d]; if (k + d < N && fstate[k + d] === 1) return frames[k + d]; }
+    return null;
+  };
+  const paintFrame = (im, a) => {
+    const iw = im.naturalWidth || im.width, ih = im.naturalHeight || im.height;
+    const sc = Math.max(cw / iw, ch / ih);
+    const w = iw * sc, h = ih * sc;
+    // the car sits right of centre in the landscape film; narrow windows keep it in frame
+    const bias = portrait ? 0.5 : (cw / ch < 1.3 ? 0.66 : 0.5);
+    ctx.globalAlpha = a;
+    ctx.drawImage(im, (cw - w) * bias, (ch - h) / 2, w, h);
+  };
+  const draw = () => {
+    const pos = Math.min(cur, Math.max(0, ready - 1));
+    const i0 = Math.floor(pos), fr = pos - i0;
+    const a = pick(i0);
+    if (!a) return pos;
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+    paintFrame(a, 1);
+    // two frames are blended only while the film moves slowly; at speed one draw per tick is enough
+    if (fr > 0.02 && Math.abs(pos - lastPos) < 0.5 && bmp.has(i0) && bmp.has(i0 + 1)) paintFrame(bmp.get(i0 + 1), fr);
+    ctx.globalAlpha = 1;
+    if (poster.style.visibility !== 'hidden') poster.style.visibility = 'hidden';
+    lastPos = pos;
+    return pos;
+  };
+  const size = () => {
+    measure();
+    const r = canvas.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    // never draw the film larger than its source: the canvas is capped where the frame still covers it 1:1
+    const pr = Math.max(0.5, Math.min(dprCap, SRC_W / r.width, SRC_H / r.height));
+    const w = Math.round(r.width * pr), h = Math.round(r.height * pr);
+    if (w === cw && h === ch) return;                               // a phone's address bar sliding away is not a resize of the stage
+    cw = canvas.width = w; ch = canvas.height = h; gen++;
+    for (const b of bmp.values()) b.close();
+    bmp.clear(); pend.clear(); lastPos = -1;
+    kick();
+  };
+
+  let lastBeat = 0, hudKey = '';
+  const railF = railLis.map(() => -1);
+  const hud = (p) => {
+    let st = 0;
+    while (st < CUT.length && p >= CUT[st]) st++;
+    if (st !== lastBeat) {
+      beats.forEach((b, i) => b.classList.toggle('is-on', i === st));
+      lastBeat = st;
+    }
+    const key = st + '|' + (p > 0.01);
+    if (key !== hudKey) {
+      hudKey = key;
+      railLis.forEach((li, i) => li.classList.toggle('is-on', st === i + 1));
+      if (cueEl) cueEl.style.opacity = p > 0.01 ? 0 : 1;
+    }
+    railLis.forEach((li, i) => {
+      const f = Math.round(clamp01((p - CUT[i]) / ((i < CUT.length - 1 ? CUT[i + 1] : 0.96) - CUT[i])) * 100) / 100;
+      if (f !== railF[i]) { railF[i] = f; li.style.setProperty('--f', f); }
+    });
+  };
+  function tick() {
+    raf = 0;
+    const d = target - cur;
+    if (Math.abs(d) > 0.001) dir = d > 0 ? 1 : -1;
+    // Lenis already eases the scroll, so the film follows it exactly; without it (or when settling) the film eases itself
+    cur = (reduce || (lenisRef && !snapped) || Math.abs(d) < 0.01) ? target : cur + d * (snapped ? 0.3 : 0.14);
+    windowAt(Math.round(cur));
+    hud(draw() / (N - 1));
+    if (Math.abs(target - cur) > 0.005) kick();
+  }
+  const onFilmScroll = () => {
+    const y = scrollY;
+    target = clamp01((y - filmTop) / span) * (N - 1);
+    // when the scroll stops, the film settles on a whole frame: a rendered frame is sharper than a blend of two
+    snapped = false; clearTimeout(idleT);
+    idleT = setTimeout(() => { target = Math.round(target); snapped = true; kick(); }, 170);
+    kick();
+    nav.classList.toggle('is-solid', y > filmTop + span - 2);
+    const heroOn = y < filmTop + span + innerHeight * 0.5;
+    if (heroOn !== vis.hero) { vis.hero = heroOn; syncDock(); }
+  };
+  addEventListener('scroll', onFilmScroll, { passive: true });
+  addEventListener('resize', () => { size(); onFilmScroll(); });
+  addEventListener('load', () => { measure(); onFilmScroll(); });
+  size(); pump(); onFilmScroll(); hud(0); syncDock();
 
   /* ---------- Damage map ---------- */
   /* Top view, front up. Left/right are the driver's (left-hand drive). Panels are
@@ -645,8 +811,6 @@
       }));
     }
 
-    gsap.to('[data-hero-media]', { yPercent: 16, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
-    gsap.to('.hero-copy', { yPercent: -18, opacity: 0, ease: 'none', scrollTrigger: { trigger: '.hero', start: '35% top', end: 'bottom top', scrub: true } });
     gsap.from('[data-wm]', { yPercent: 70, ease: 'none', scrollTrigger: { trigger: '[data-foot]', start: 'top bottom', end: 'top 45%', scrub: true } });
   }
 })();
