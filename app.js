@@ -1,6 +1,6 @@
 /* Luxury Auto Service Centre, website concept. Behaviour layer.
    Works without GSAP/Lenis: they are fetched after first paint and only add
-   parallax, smooth scrolling and the cursor-follow image. */
+   parallax and smooth scrolling. */
 (() => {
   'use strict';
   window.__app = true;
@@ -24,6 +24,30 @@
     }, { threshold });
     io.observe(el);
   };
+  const waLink = (msg) => `https://wa.me/${WA}?text=${encodeURIComponent(msg)}`;
+  const setSend = (a, msg, fallback) => {
+    if (msg) {
+      a.href = waLink(msg);
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.classList.remove('is-disabled');
+      a.removeAttribute('aria-disabled');
+    } else {
+      a.href = fallback;
+      a.removeAttribute('target');
+      a.classList.add('is-disabled');
+      a.setAttribute('aria-disabled', 'true');
+    }
+  };
+  /* Single-choice button groups (aria-pressed). Clicking the chosen one again clears it. */
+  const single = (group, onChange) => {
+    const bs = $$('button', group);
+    bs.forEach((b) => b.addEventListener('click', () => {
+      const was = b.getAttribute('aria-pressed') === 'true';
+      bs.forEach((x) => x.setAttribute('aria-pressed', String(!was && x === b)));
+      onChange(was ? null : b.dataset.v);
+    }));
+  };
 
   let lenisRef = null; // set once the motion layer loads; native scrolling until then
   const scrollToEl = (el, block = 'start') => {
@@ -37,7 +61,7 @@
     }
   };
 
-  /* ---------- Reveal + counters ---------- */
+  /* ---------- Reveal + counter ---------- */
   const revealIO = 'IntersectionObserver' in window ? new IntersectionObserver((es) => {
     es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); revealIO.unobserve(e.target); } });
   }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }) : null;
@@ -52,8 +76,7 @@
       const dur = 1400;
       const tick = (t) => {
         const p = Math.min(1, (t - t0) / dur);
-        const v = Math.round(end * (1 - Math.pow(1 - p, 3)));
-        el.textContent = v.toLocaleString('en-US');
+        el.textContent = Math.round(end * (1 - Math.pow(1 - p, 3))).toLocaleString('en-US');
         if (p < 1) requestAnimationFrame(tick);
       };
       requestAnimationFrame(tick);
@@ -64,16 +87,25 @@
   const nav = $('[data-nav]');
   const dock = $('[data-dock]');
   const hero = $('.hero');
-  const vis = { hero: true, damage: false, foot: false };
-  const syncDock = () => dock.classList.toggle('is-on', !vis.hero && !vis.damage && !vis.foot);
+  const vis = { hero: true, damage: false, service: false, foot: false };
+  const syncDock = () => {
+    const on = !vis.hero && !vis.damage && !vis.service && !vis.foot;
+    dock.classList.toggle('is-on', on);
+    dock.inert = !on; // hidden off-screen, so it must not take keyboard focus
+  };
   if ('IntersectionObserver' in window) {
     new IntersectionObserver(([e]) => {
       nav.classList.toggle('is-solid', e.intersectionRatio < 0.88);
       vis.hero = e.intersectionRatio > 0.25;
       syncDock();
     }, { threshold: [0, 0.25, 0.88, 1] }).observe(hero);
-    new IntersectionObserver(([e]) => { vis.damage = e.isIntersecting; syncDock(); }, { threshold: 0, rootMargin: '-35% 0px -35% 0px' }).observe($('#damage'));
+    const mid = { threshold: 0, rootMargin: '-35% 0px -35% 0px' };
+    new IntersectionObserver(([e]) => { vis.damage = e.isIntersecting; syncDock(); }, mid).observe($('#damage'));
+    new IntersectionObserver(([e]) => { vis.service = e.isIntersecting; syncDock(); }, mid).observe($('#service'));
     new IntersectionObserver(([e]) => { vis.foot = e.isIntersecting; syncDock(); }, { threshold: 0 }).observe($('[data-foot]'));
+  } else {
+    dock.inert = false;
+    dock.classList.add('is-on');
   }
 
   /* ---------- Damage map ---------- */
@@ -89,6 +121,8 @@
     quarter: 'M0 620 L101 620 L104 666 C106 720 108 770 114 806 C90 808 60 806 0 800 Z',
     sideglass: 'M100 296 L130 388 C134 460 134 520 130 588 L104 666 L101 620 L97 588 L97 388 Z',
     mirror: 'M60 312 L30 304 C24 303 21 307 22 312 L25 324 C26 329 31 331 36 330 L61 326 Z',
+    head: 'M74 76 C92 58 120 46 154 42 L158 60 C130 64 106 74 90 92 Z',
+    tail: 'M60 822 C78 846 110 860 148 864 L148 846 C118 842 92 832 74 812 Z',
   };
   const PANELS = [
     { id: 'fb', name: 'Front bumper', d: 'M0 0 H420 V108 C360 90 290 74 210 72 C130 74 60 90 0 108 Z' },
@@ -104,30 +138,62 @@
     { id: 'boot', name: 'Boot lid', d: 'M104 666 L316 666 C314 720 312 770 306 806 C280 814 240 818 210 818 C180 818 140 814 114 806 C108 770 106 720 104 666 Z' },
     { id: 'qrr', name: 'Rear right quarter', d: mirrorX(L.quarter) },
     { id: 'rb', name: 'Rear bumper', d: 'M0 900 H420 V800 C360 806 330 808 306 806 C280 814 240 818 210 818 C180 818 140 814 114 806 C90 808 60 806 0 800 Z' },
-  ];
+  ].map((p) => ({ ...p, opts: BODY_OPTS }));
+  /* Windscreen and rear window are buttons; the side glass is drawing only. */
   const GLASS = [
-    'M100 296 L320 296 L290 388 L130 388 Z',
-    'M130 588 L290 588 L316 666 L104 666 Z',
-    L.sideglass,
-    mirrorX(L.sideglass),
+    { id: 'ws', name: 'Windscreen', d: 'M100 296 L320 296 L290 388 L130 388 Z', opts: ['Chip', 'Crack', 'Scratches'] },
+    { id: 'rw', name: 'Rear window', d: 'M130 588 L290 588 L316 666 L104 666 Z', opts: ['Chip', 'Crack'] },
+  ];
+  const SIDE_GLASS = [L.sideglass, mirrorX(L.sideglass)];
+  /* Lights and grille: drawn shapes with a wider invisible hit area on top, so they can be tapped. */
+  const PARTS = [
+    { id: 'gr', name: 'Grille', d: 'M168 40 C192 38 228 38 252 40 L250 54 C228 52 192 52 170 54 Z', hit: { rect: [162, 31, 96, 30] }, opts: ['Broken', 'Scratch'] },
+    { id: 'hlf', name: 'Front left headlight', d: L.head, opts: ['Broken', 'Cracked', 'Faded'] },
+    { id: 'hrf', name: 'Front right headlight', d: mirrorX(L.head), opts: ['Broken', 'Cracked', 'Faded'] },
+    { id: 'tll', name: 'Rear left tail light', d: L.tail, opts: ['Broken', 'Cracked'] },
+    { id: 'tlr', name: 'Rear right tail light', d: mirrorX(L.tail), opts: ['Broken', 'Cracked'] },
+  ];
+  const MIRRORS = [
+    { id: 'mrl', name: 'Left mirror', d: L.mirror, hx: 8, opts: ['Broken', 'Scratch'] },
+    { id: 'mrr', name: 'Right mirror', d: mirrorX(L.mirror), hx: 360, opts: ['Broken', 'Scratch'] },
   ];
   const WHEELS = [
     { id: 'whfl', name: 'Front left wheel', x: 36, y: 140, hx: 4 },
     { id: 'whfr', name: 'Front right wheel', x: 358, y: 140, hx: 364 },
     { id: 'whrl', name: 'Rear left wheel', x: 36, y: 662, hx: 4 },
     { id: 'whrr', name: 'Rear right wheel', x: 358, y: 662, hx: 364 },
-  ];
-  const MIRRORS = [
-    { id: 'mrl', name: 'Left mirror', d: L.mirror, hx: 8 },
-    { id: 'mrr', name: 'Right mirror', d: mirrorX(L.mirror), hx: 360 },
-  ];
+  ].map((w) => ({ ...w, opts: ['Kerb damage', 'Repaint'] }));
   const CHIPS = ['Service due', 'Warning light on', 'A/C not cooling', 'Brakes', 'Noise or vibration', 'Gearbox'];
 
   const car = $('[data-car]');
   const readout = $('[data-readout]');
+  const byId = new Map(); // id -> item
+  const byName = new Map(); // name -> id
   const picked = new Map(); // id -> { name, opts, choice }
   const chipsOn = new Set();
-  const nodes = new Map(); // id -> element that shows the selected state
+  const nodes = new Map(); // id -> elements that show the selected state
+
+  /* el takes the clicks and focus; visuals show hover, keyboard focus and selection. */
+  const makeButton = (el, item, visuals = [el]) => {
+    byId.set(item.id, item);
+    byName.set(item.name, item.id);
+    nodes.set(item.id, [...new Set([el, ...visuals])]);
+    el.setAttribute('tabindex', '0');
+    el.setAttribute('role', 'button');
+    el.setAttribute('aria-pressed', 'false');
+    el.setAttribute('aria-label', item.name);
+    el.addEventListener('click', () => toggle(item));
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(item); }
+    });
+    el.addEventListener('pointerenter', () => { visuals.forEach((v) => v.classList.add('hl')); setReadout(item.name); });
+    el.addEventListener('pointerleave', () => { visuals.forEach((v) => v.classList.remove('hl')); setReadout(); });
+    el.addEventListener('focus', () => {
+      if (el.matches(':focus-visible')) visuals.forEach((v) => v.classList.add('kf'));
+      setReadout(item.name);
+    });
+    el.addEventListener('blur', () => { visuals.forEach((v) => v.classList.remove('kf')); setReadout(); });
+  };
 
   if (car) {
     $('[data-body-path]', car).setAttribute('d', BODY);
@@ -137,60 +203,61 @@
     const gWheels = $('[data-wheels]', car);
     const gTrim = $('[data-trim]', car);
     const gMirrors = $('[data-mirrors]', car);
+    const gParts = $('[data-parts]', car);
+    const gHits = $('[data-hits]', car);
+    gParts.setAttribute('clip-path', 'url(#bodyClip)');
 
-    const makeButton = (el, item, opts) => {
-      el.setAttribute('tabindex', '0');
-      el.setAttribute('role', 'button');
-      el.setAttribute('aria-pressed', 'false');
-      el.setAttribute('aria-label', item.name);
-      el.addEventListener('click', () => toggle(item, opts));
-      el.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(item, opts); }
-      });
-      el.addEventListener('pointerenter', () => setReadout(item.name));
-      el.addEventListener('focus', () => setReadout(item.name));
-      el.addEventListener('pointerleave', () => setReadout());
-      el.addEventListener('blur', () => setReadout());
-    };
-
+    // DOM order is the tab order: panels, glass, grille and lights, mirrors, wheels.
     PANELS.forEach((p, i) => {
       const el = svgEl('path', { d: p.d, class: 'panel' });
       el.style.setProperty('--d', `${0.45 + i * 0.06}s`);
-      makeButton(el, p, BODY_OPTS);
+      makeButton(el, p);
       gPanels.appendChild(el);
-      nodes.set(p.id, [el]);
     });
-    GLASS.forEach((d) => {
+    SIDE_GLASS.forEach((d) => {
       const el = svgEl('path', { d, class: 'glass' });
       el.style.setProperty('--d', '1.1s');
       gGlass.appendChild(el);
     });
-    WHEELS.forEach((w) => {
-      const hit = svgEl('rect', { x: w.hx, y: w.y - 10, width: 52, height: 130, class: 'hit' });
-      const el = svgEl('rect', { x: w.x, y: w.y, width: 26, height: 110, rx: 9, class: 'wheel' });
-      el.style.setProperty('--d', '1.2s');
-      makeButton(hit, w, ['Kerb damage', 'Repaint']);
-      gWheels.append(hit, el);
-      nodes.set(w.id, [hit, el]);
+    GLASS.forEach((g) => {
+      const el = svgEl('path', { d: g.d, class: 'glass part' });
+      el.style.setProperty('--d', '1.1s');
+      makeButton(el, g);
+      gGlass.appendChild(el);
+    });
+    PARTS.forEach((p) => {
+      const el = svgEl('path', { d: p.d, class: p.id === 'gr' ? 'part grille' : p.id.startsWith('t') ? 'part tail' : 'part lamp' });
+      gParts.appendChild(el);
+      const hit = p.hit
+        ? svgEl('rect', { x: p.hit.rect[0], y: p.hit.rect[1], width: p.hit.rect[2], height: p.hit.rect[3], class: 'hit' })
+        : svgEl('path', { d: p.d, class: 'hit hit-wide' });
+      makeButton(hit, p, [el]);
+      gHits.appendChild(hit);
     });
     MIRRORS.forEach((m) => {
-      const hit = svgEl('rect', { x: m.hx, y: 292, width: 52, height: 50, class: 'hit' });
       const el = svgEl('path', { d: m.d, class: 'mirror' });
       el.style.setProperty('--d', '1.2s');
-      makeButton(hit, m, ['Broken', 'Scratch']);
-      gMirrors.append(hit, el);
-      nodes.set(m.id, [hit, el]);
+      gMirrors.appendChild(el);
+      const hit = svgEl('rect', { x: m.hx, y: 292, width: 52, height: 50, class: 'hit' });
+      makeButton(hit, m, [el]);
+      gHits.appendChild(hit);
+    });
+    WHEELS.forEach((w) => {
+      const el = svgEl('rect', { x: w.x, y: w.y, width: 26, height: 110, rx: 9, class: 'wheel' });
+      el.style.setProperty('--d', '1.2s');
+      gWheels.appendChild(el);
+      const hit = svgEl('rect', { x: w.hx, y: w.y - 10, width: 52, height: 130, class: 'hit' });
+      makeButton(hit, w, [el]);
+      gHits.appendChild(hit);
     });
     [
       ['path', { d: 'M158 84 C154 170 152 240 156 292', class: 'crease' }],
       ['path', { d: 'M262 84 C266 170 268 240 264 292', class: 'crease' }],
-      ['path', { d: 'M78 70 C96 54 124 46 150 44 L152 56 C126 60 102 68 86 82 Z', class: 'lamp' }],
-      ['path', { d: mirrorX('M78 70 C96 54 124 46 150 44 L152 56 C126 60 102 68 86 82 Z'), class: 'lamp' }],
-      ['path', { d: 'M64 826 C80 846 110 858 146 862 L146 850 C116 846 90 836 72 818 Z', class: 'tail' }],
-      ['path', { d: mirrorX('M64 826 C80 846 110 858 146 862 L146 850 C116 846 90 836 72 818 Z'), class: 'tail' }],
     ].forEach(([t, a]) => gTrim.appendChild(svgEl(t, a)));
     gTrim.classList.add('trim');
     gTrim.style.setProperty('--d', '1.3s');
+    gParts.classList.add('trim');
+    gParts.style.setProperty('--d', '1.25s');
 
     if (reduce) car.classList.add('is-drawn');
     else onceVisible(car, () => car.classList.add('is-drawn'), 0.25);
@@ -198,21 +265,8 @@
 
   function setReadout(name) {
     if (!readout) return;
-    if (name) readout.innerHTML = `<b>${name}</b>${picked.has(idOf(name)) ? ' selected' : ''}`;
+    if (name) readout.innerHTML = `<b>${name}</b>${picked.has(byName.get(name)) ? ' selected' : ''}`;
     else readout.textContent = picked.size ? `${picked.size} marked. Tap again to remove.` : 'Tap any panel';
-  }
-  const idOf = (name) => [...PANELS, ...WHEELS, ...MIRRORS].find((x) => x.name === name)?.id;
-
-  function toggle(item, opts) {
-    if (picked.has(item.id)) picked.delete(item.id);
-    else picked.set(item.id, { name: item.name, opts, choice: opts[0] });
-    const on = picked.has(item.id);
-    (nodes.get(item.id) || []).forEach((n) => {
-      n.classList.toggle('is-on', on);
-      if (n.hasAttribute('aria-pressed')) n.setAttribute('aria-pressed', String(on));
-    });
-    setReadout(item.name);
-    renderCard();
   }
 
   const list = $('[data-job-list]');
@@ -223,6 +277,61 @@
   const model = $('[data-car-model]');
   const year = $('[data-car-year]');
   const chipRow = $('[data-chips]');
+  const claim = $('[data-claim]');
+  const insurerWrap = $('[data-insurer-wrap]');
+  const insurer = $('[data-insurer]');
+  const rows = new Map(); // id -> li, so a tap adds or removes one row instead of rebuilding the list
+  let pay = 'myself';
+  let police = null;
+
+  function toggle(item) {
+    const on = !picked.has(item.id);
+    if (on) {
+      picked.set(item.id, { name: item.name, opts: item.opts, choice: item.opts[0] });
+      addRow(item.id);
+    } else {
+      picked.delete(item.id);
+      rows.get(item.id)?.remove();
+      rows.delete(item.id);
+    }
+    (nodes.get(item.id) || []).forEach((n) => {
+      n.classList.toggle('is-on', on);
+      if (n.hasAttribute('aria-pressed')) n.setAttribute('aria-pressed', String(on));
+    });
+    setReadout(item.name);
+    refreshCard();
+  }
+
+  function addRow(id) {
+    const v = picked.get(id);
+    const li = document.createElement('li');
+    li.className = 'job-item';
+    li.innerHTML = `<span class="name">${v.name}</span>
+      <button type="button" class="remove" aria-label="Remove ${v.name}"><i class="ph ph-x" aria-hidden="true"></i></button>
+      <div class="seg" role="group" aria-label="What happened to the ${v.name.toLowerCase()}"></div>`;
+    const seg = $('.seg', li);
+    v.opts.forEach((o) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = o;
+      b.setAttribute('aria-pressed', String(v.choice === o));
+      b.addEventListener('click', () => {
+        v.choice = o;
+        $$('button', seg).forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+        renderMessage();
+      });
+      seg.appendChild(b);
+    });
+    $('.remove', li).addEventListener('click', () => {
+      // Keep keyboard focus in the card: move it to the neighbouring row, or back to the part on the car.
+      const next = li.nextElementSibling || li.previousElementSibling;
+      toggle(byId.get(id));
+      const target = next ? $('.remove', next) : (nodes.get(id) || [])[0];
+      if (target) target.focus({ preventScroll: true });
+    });
+    list.appendChild(li);
+    rows.set(id, li);
+  }
 
   CHIPS.forEach((c) => {
     const b = document.createElement('button');
@@ -233,43 +342,26 @@
     b.addEventListener('click', () => {
       chipsOn.has(c) ? chipsOn.delete(c) : chipsOn.add(c);
       b.setAttribute('aria-pressed', String(chipsOn.has(c)));
-      renderCard();
+      refreshCard();
     });
     chipRow.appendChild(b);
   });
   // The digit filter must run before the message is rebuilt, or the message keeps the stray characters.
   year.addEventListener('input', () => { year.value = year.value.replace(/\D/g, '').slice(0, 4); });
-  [model, year].forEach((i) => i.addEventListener('input', renderMessage));
+  [model, year, insurer].forEach((i) => i.addEventListener('input', renderMessage));
+  // "Paying by" always has an answer, so clicking the chosen option keeps it chosen.
+  $$('[data-pay] button').forEach((b) => b.addEventListener('click', () => {
+    pay = b.dataset.v;
+    $$('[data-pay] button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    insurerWrap.hidden = pay !== 'insurance';
+    renderMessage();
+  }));
+  single($('[data-police]'), (v) => { police = v; renderMessage(); });
 
-  function renderCard() {
-    list.innerHTML = '';
-    picked.forEach((v, id) => {
-      const li = document.createElement('li');
-      li.className = 'job-item';
-      li.innerHTML = `<span class="name">${v.name}</span>
-        <button type="button" class="remove" aria-label="Remove ${v.name}"><i class="ph ph-x" aria-hidden="true"></i></button>
-        <div class="seg" role="group" aria-label="What happened to the ${v.name.toLowerCase()}"></div>`;
-      const seg = $('.seg', li);
-      v.opts.forEach((o) => {
-        const b = document.createElement('button');
-        b.type = 'button';
-        b.textContent = o;
-        b.setAttribute('aria-pressed', String(v.choice === o));
-        b.addEventListener('click', () => {
-          v.choice = o;
-          $$('button', seg).forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-          renderMessage();
-        });
-        seg.appendChild(b);
-      });
-      $('.remove', li).addEventListener('click', () => {
-        const item = [...PANELS, ...WHEELS, ...MIRRORS].find((x) => x.id === id);
-        toggle(item, v.opts);
-      });
-      list.appendChild(li);
-    });
+  function refreshCard() {
     const n = picked.size + chipsOn.size;
     empty.hidden = picked.size > 0;
+    claim.hidden = picked.size === 0;
     badge.textContent = `${n} ${n === 1 ? 'item' : 'items'}`;
     renderMessage();
   }
@@ -281,21 +373,15 @@
     lines.push(`Car: ${carLine || 'to be added'}`);
     picked.forEach((v) => lines.push(`- ${v.name}: ${v.choice.toLowerCase()}`));
     chipsOn.forEach((c) => lines.push(`- ${c}`));
+    if (picked.size) {
+      const ins = insurer.value.trim();
+      lines.push(`Paying: ${pay === 'insurance' ? `insurance claim${ins ? `, ${ins}` : ''}` : 'myself'}`);
+      if (police) lines.push(`Police report: ${police === 'have' ? 'I have it' : 'not yet'}`);
+    }
     lines.push('I can send photos here.');
     const msg = lines.join('\n');
     preview.textContent = n ? msg : 'Your message appears here once you mark something.';
-    if (n) {
-      send.href = `https://wa.me/${WA}?text=${encodeURIComponent(msg)}`;
-      send.target = '_blank';
-      send.rel = 'noopener';
-      send.classList.remove('is-disabled');
-      send.removeAttribute('aria-disabled');
-    } else {
-      send.href = '#damage';
-      send.removeAttribute('target');
-      send.classList.add('is-disabled');
-      send.setAttribute('aria-disabled', 'true');
-    }
+    setSend(send, n ? msg : '', '#damage');
   }
   send.addEventListener('click', (e) => {
     if (send.getAttribute('aria-disabled') !== 'true') return;
@@ -306,28 +392,111 @@
     readout.innerHTML = '<b>Mark a panel on the car first</b>';
     scrollToEl($('[data-car-stage]'), 'center');
   });
-  renderCard();
+  refreshCard();
+
+  /* ---------- Service booking ---------- */
+  const WORK = ['Scheduled service', 'Oil and filters', 'Brakes', 'A/C service', 'Warning light', 'Forty-point check-up'];
+  const workOn = new Set();
+  const workRow = $('[data-work]');
+  const workBtns = new Map();
+  const svcModel = $('[data-svc-model]');
+  const svcKm = $('[data-svc-km]');
+  const dayRow = $('[data-days]');
+  const svcPreview = $('[data-svc-preview]');
+  const svcSend = $('[data-svc-send]');
+  const svcSummary = $('[data-svc-summary]');
+  const svcHint = $('[data-svc-hint]');
+  let day = null;
+  let time = null;
+  const fmtDay = (d) => d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }).replace(',', '');
+
+  const toggleWork = (w) => {
+    workOn.has(w) ? workOn.delete(w) : workOn.add(w);
+    workBtns.get(w).setAttribute('aria-pressed', String(workOn.has(w)));
+    renderSvc();
+  };
+  WORK.forEach((w) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip';
+    b.textContent = w;
+    b.setAttribute('aria-pressed', 'false');
+    b.addEventListener('click', () => toggleWork(w));
+    workRow.appendChild(b);
+    workBtns.set(w, b);
+  });
+
+  // The next six open days, starting tomorrow. Google lists the workshop as closed on Sunday.
+  const days = [];
+  for (let d = new Date(), i = 0; days.length < 6 && i < 14; i++) {
+    d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
+    if (d.getDay() !== 0) days.push(d);
+  }
+  days.forEach((d, i) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'day';
+    b.setAttribute('aria-pressed', 'false');
+    b.setAttribute('aria-label', d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }));
+    b.dataset.v = String(i);
+    b.innerHTML = `<span>${d.toLocaleDateString('en-GB', { weekday: 'short' })}</span><b>${d.getDate()}</b><span>${d.toLocaleDateString('en-GB', { month: 'short' })}</span>`;
+    dayRow.appendChild(b);
+  });
+  single(dayRow, (v) => { day = v === null ? null : days[+v]; renderSvc(); });
+  single($('[data-time]'), (v) => { time = v; renderSvc(); });
+  svcKm.addEventListener('input', () => { svcKm.value = svcKm.value.replace(/\D/g, '').slice(0, 7); });
+  [svcModel, svcKm].forEach((i) => i.addEventListener('input', renderSvc));
+
+  function renderSvc() {
+    const when = day ? `${fmtDay(day)}${time ? `, ${time}` : ''}` : '';
+    svcSummary.textContent = when || 'No day yet';
+    const km = svcKm.value ? `${(+svcKm.value).toLocaleString('en-US')} km` : '';
+    const carLine = [svcModel.value.trim(), km].filter(Boolean).join(', ');
+    const lines = [
+      'Hello Luxury Auto, I would like to book a service.',
+      `Car: ${carLine || 'to be added'}`,
+      `Work: ${workOn.size ? [...workOn].map((w, i) => (i ? w.toLowerCase() : w)).join(', ') : 'to be added'}`,
+      `Preferred day: ${when || 'to be agreed'}`,
+      'Please confirm a slot.',
+    ];
+    const ready = workOn.size > 0 && day;
+    svcPreview.textContent = lines.join('\n');
+    setSend(svcSend, ready ? lines.join('\n') : '', '#service');
+    svcHint.textContent = ready ? 'Sends to +971 50 184 0030 on WhatsApp.' : 'Choose the work and a day to send the request.';
+  }
+  svcSend.addEventListener('click', (e) => {
+    if (svcSend.getAttribute('aria-disabled') !== 'true') return;
+    e.preventDefault();
+    svcHint.textContent = workOn.size ? 'Pick a day first.' : 'Choose the work first.';
+    const target = workOn.size ? $('button', dayRow) : $('button', workRow);
+    if (target) target.focus({ preventScroll: true });
+  });
+  // Lines in the services menu arrive with their work already chosen.
+  $$('[data-preset]').forEach((a) => a.addEventListener('click', () => {
+    if (!workOn.has(a.dataset.preset)) toggleWork(a.dataset.preset);
+  }));
+  renderSvc();
 
   /* ---------- Repair tracker ---------- */
   /* The estimate card is always in the layout and only changes state, so nothing below it
-     moves when the demo reaches the approval step. Days run Saturday to Wednesday: the garage
-     is open Saturday to Thursday. */
+     moves when the demo reaches the approval step. Days run Monday to Thursday, 9 AM to 6 PM:
+     open hours on both his own site (Sat to Thu, 8 to 6) and Google (Mon to Sat, 9 to 7). */
   const STAGES = [
-    { label: 'Checked in', time: 'Sat 09:10', msg: '<b>Checked in at Bay 4.</b> Arrival photos sent to your WhatsApp.' },
-    { label: 'Inspected', time: 'Sat 11:35', msg: '<b>Inspection done.</b> Front bumper, right headlight and right fender. Findings and photos sent.' },
-    { label: 'Your approval', time: 'Sat 14:02', approval: true, msg: '<b>You approved the estimate</b> on your phone at 14:02. Work starts.' },
-    { label: 'Parts', time: 'Sun 10:20', msg: '<b>Genuine parts ordered.</b> Headlight and brackets arrive Monday morning.' },
-    { label: 'Bodywork', time: 'Mon 15:40', msg: '<b>Bumper repaired and refitted.</b> Panel gaps checked.' },
-    { label: 'Paint', time: 'Tue 12:05', msg: '<b>In the paint booth.</b> Colour matched to the original paint code.' },
-    { label: 'Quality check', time: 'Wed 10:30', msg: '<b>Road test and forty-point check passed.</b>' },
-    { label: 'Ready', time: 'Wed 16:00', msg: '<b>Ready for collection.</b> Washed and ready to drive away.' },
+    { label: 'Checked in', time: 'Mon 09:10', msg: '<b>Checked in at Bay 4.</b> Arrival photos sent to your WhatsApp.' },
+    { label: 'Inspected', time: 'Mon 11:35', msg: '<b>Inspection done.</b> Front bumper, right headlight and right fender. Findings and photos sent.' },
+    { label: 'Your approval', time: 'Mon 14:02', approval: true, msg: '<b>You approved the estimate</b> on your phone at 14:02. Work starts.' },
+    { label: 'Parts', time: 'Tue 10:20', msg: '<b>Genuine parts ordered.</b> Headlight and brackets arrive Wednesday morning.' },
+    { label: 'Bodywork', time: 'Tue 15:40', msg: '<b>Bumper repaired and refitted.</b> Panel gaps checked.' },
+    { label: 'Paint', time: 'Wed 12:05', msg: '<b>In the paint booth.</b> Colour matched to the original paint code.' },
+    { label: 'Quality check', time: 'Thu 10:30', msg: '<b>Road test and forty-point check passed.</b>' },
+    { label: 'Ready', time: 'Thu 16:00', msg: '<b>Ready for collection.</b> Washed and ready to drive away.' },
   ];
   const EST_TITLE = {
     pending: 'Estimate, sent after inspection',
     awaiting: 'Estimate ready. Nothing starts until you approve.',
     call: 'Waiting for your call. Nothing is touched until you approve.',
-    approved: 'Estimate approved Sat 14:02',
-    done: 'Estimate approved Sat 14:02',
+    approved: 'Estimate approved Mon 14:02',
+    done: 'Estimate approved Mon 14:02',
   };
   const rail = $('[data-rail]');
   const detail = $('[data-detail]');
@@ -438,52 +607,6 @@
     });
   });
 
-  /* ---------- Service strips ---------- */
-  const strips = $$('.strip');
-  const wide = matchMedia('(min-width: 768px)');
-  const openStrip = (s) => { if (!wide.matches) return; strips.forEach((x) => x.classList.toggle('is-open', x === s)); };
-  strips.forEach((s) => {
-    s.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') openStrip(s); });
-    s.addEventListener('focus', () => openStrip(s));
-    s.addEventListener('click', () => openStrip(s));
-  });
-
-  /* ---------- Marques: image follows the cursor ---------- */
-  const mList = $('[data-marques]');
-  const float = $('[data-marque-float]');
-  const fImg = $('[data-marque-img]');
-  const mSection = $('.marques');
-  let moveFloat = (x, y) => { float.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`; };
-  if (!matchMedia('(hover: hover) and (min-width: 768px)').matches) {
-    $$('li', mList).forEach((li) => {
-      const im = document.createElement('img');
-      im.className = 'marque-thumb';
-      im.loading = 'lazy';
-      im.decoding = 'async';
-      im.alt = '';
-      im.src = li.dataset.img.replace('w=900', 'w=760');
-      li.prepend(im);
-    });
-  } else {
-    let warmed = false;
-    $$('li', mList).forEach((li) => {
-      li.addEventListener('pointerenter', () => {
-        if (!warmed) { $$('li', mList).forEach((x) => { const i = new Image(); i.src = x.dataset.img; }); warmed = true; }
-        $$('li', mList).forEach((x) => x.classList.toggle('is-hot', x === li));
-        fImg.src = li.dataset.img;
-        float.classList.add('is-on');
-      });
-    });
-    mList.addEventListener('pointerleave', () => {
-      float.classList.remove('is-on');
-      $$('li', mList).forEach((x) => x.classList.remove('is-hot'));
-    });
-    mSection.addEventListener('pointermove', (e) => {
-      const r = mSection.getBoundingClientRect();
-      moveFloat(e.clientX - r.left, e.clientY - r.top);
-    });
-  }
-
   /* ---------- Motion layer (optional) ---------- */
   if (reduce) return;
   const load = (src) => new Promise((res, rej) => {
@@ -524,16 +647,6 @@
 
     gsap.to('[data-hero-media]', { yPercent: 16, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
     gsap.to('.hero-copy', { yPercent: -18, opacity: 0, ease: 'none', scrollTrigger: { trigger: '.hero', start: '35% top', end: 'bottom top', scrub: true } });
-
-    const xTo = gsap.quickTo(float, 'x', { duration: 0.55, ease: 'power3' });
-    const yTo = gsap.quickTo(float, 'y', { duration: 0.55, ease: 'power3' });
-    gsap.set(float, { xPercent: -50, yPercent: -50 });
-    moveFloat = (x, y) => { xTo(x); yTo(y); };
-
     gsap.from('[data-wm]', { yPercent: 70, ease: 'none', scrollTrigger: { trigger: '[data-foot]', start: 'top bottom', end: 'top 45%', scrub: true } });
-
-    $$('.strip img').forEach((img) => {
-      gsap.fromTo(img, { yPercent: -4 }, { yPercent: 4, ease: 'none', scrollTrigger: { trigger: '.strips', start: 'top bottom', end: 'bottom top', scrub: true } });
-    });
   }
 })();
