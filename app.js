@@ -1,11 +1,7 @@
-/* Luxury Auto Service Centre, website concept. Behaviour layer.
-   Works without GSAP/Lenis: they are fetched after first paint and only add
-   parallax and smooth scrolling. */
+/* Luxury Auto Service Centre, concept v3 (2026-11-19). Behaviour layer, no libraries.
+   Damage map and booking carried over from concept v2; Our work is direction B's drag-to-compare. */
 (() => {
   'use strict';
-  window.__app = true;
-  const root = document.documentElement;
-  root.classList.add('js');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const WA = '971501840030';
   const $ = (s, r = document) => r.querySelector(s);
@@ -16,14 +12,7 @@
     for (const k in attrs) el.setAttribute(k, attrs[k]);
     return el;
   };
-  const onceVisible = (el, fn, threshold = 0.3) => {
-    if (!el) return;
-    if (!('IntersectionObserver' in window)) { fn(); return; }
-    const io = new IntersectionObserver((es) => {
-      if (es.some((e) => e.isIntersecting)) { io.disconnect(); fn(); }
-    }, { threshold });
-    io.observe(el);
-  };
+  const icon = (id) => `<svg class="i" aria-hidden="true"><use href="#i-${id}"/></svg>`;
   const waLink = (msg) => `https://wa.me/${WA}?text=${encodeURIComponent(msg)}`;
   const setSend = (a, msg, fallback) => {
     if (msg) {
@@ -48,231 +37,10 @@
       onChange(was ? null : b.dataset.v);
     }));
   };
+  const scrollToEl = (el, block = 'start') => { if (el) el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block }); };
 
-  let lenisRef = null; // set once the motion layer loads; native scrolling until then
-  const scrollToEl = (el, block = 'start') => {
-    if (!el) return;
-    if (lenisRef) {
-      const h = el.getBoundingClientRect().height;
-      const offset = block === 'center' ? -Math.max(72, (innerHeight - h) / 2) : -72;
-      lenisRef.scrollTo(el, { offset, duration: 1 });
-    } else {
-      el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block });
-    }
-  };
-
-  /* ---------- Reveal + counter ---------- */
-  const revealIO = 'IntersectionObserver' in window ? new IntersectionObserver((es) => {
-    es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); revealIO.unobserve(e.target); } });
-  }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }) : null;
-  $$('[data-reveal]').forEach((el) => (revealIO ? revealIO.observe(el) : el.classList.add('in')));
-
-  $$('[data-count]').forEach((el) => {
-    const end = +el.dataset.count;
-    if (reduce) return;
-    el.textContent = '0';
-    onceVisible(el, () => {
-      const t0 = performance.now();
-      const dur = 1400;
-      const tick = (t) => {
-        const p = Math.min(1, (t - t0) / dur);
-        el.textContent = Math.round(end * (1 - Math.pow(1 - p, 3))).toLocaleString('en-US');
-        if (p < 1) requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
-    }, 0.6);
-  });
-
-  /* ---------- Nav + dock ---------- */
-  const nav = $('[data-nav]');
-  const dock = $('[data-dock]');
-  const vis = { hero: true, damage: false, service: false, foot: false };
-  const syncDock = () => {
-    const on = !vis.hero && !vis.damage && !vis.service && !vis.foot;
-    dock.classList.toggle('is-on', on);
-    dock.inert = !on; // hidden off-screen, so it must not take keyboard focus
-  };
-  if ('IntersectionObserver' in window) {
-    const mid = { threshold: 0, rootMargin: '-35% 0px -35% 0px' };
-    new IntersectionObserver(([e]) => { vis.damage = e.isIntersecting; syncDock(); }, mid).observe($('#damage'));
-    new IntersectionObserver(([e]) => { vis.service = e.isIntersecting; syncDock(); }, mid).observe($('#service'));
-    new IntersectionObserver(([e]) => { vis.foot = e.isIntersecting; syncDock(); }, { threshold: 0 }).observe($('[data-foot]'));
-  } else {
-    dock.inert = false;
-    dock.classList.add('is-on');
-  }
-
-  /* ---------- Hero film ----------
-     One rendered car, scrubbed by scroll from check-in to ready (pipeline from the Ramla demo).
-     Frames download in film order and stay compressed; only a short run around the playhead is held decoded
-     as ImageBitmaps sized to the canvas, so a phone never holds the whole film in memory. */
-  const film = $('[data-film-section]');
-  const canvas = $('[data-film]');
-  const ctx = canvas.getContext('2d');
-  const poster = $('[data-poster]');
-  const loadEl = $('[data-film-load]');
-  const cueEl = $('.film-cue');
-  const beats = $$('.beat', film);
-  const railLis = $$('.film-rail li', film);
-  const clamp01 = (x) => Math.max(0, Math.min(1, x));
-  const portrait = matchMedia('(max-aspect-ratio: 4/5)').matches;
-  const dprCap = Math.min(devicePixelRatio || 1, 2);
-  const small = portrait && innerWidth * dprCap <= 1100;            // phones get the 1080 px portrait set
-  const DIR = portrait ? (small ? 'portrait_s' : 'portrait') : 'main';
-  const SRC_W = portrait ? (small ? 1080 : 1440) : 2560;
-  const SRC_H = portrait ? (small ? 1920 : 2560) : 1440;
-  const N = portrait ? 90 : 120;
-  const src = (i) => 'frames/' + DIR + '/' + (portrait ? 'p' : 'f') + String(i + 1).padStart(3, '0') + '.webp';
-  /* where each caption takes over, read off the rendered frames: damage close-up, dent pulled, primer starts to go, lights on */
-  const CUT = [0.16, 0.40, 0.64, 0.80];
-
-  let filmTop = 0, span = 1;
-  const measure = () => {
-    filmTop = film.getBoundingClientRect().top + scrollY;
-    span = Math.max(1, film.offsetHeight - innerHeight);
-  };
-
-  const frames = new Array(N), fstate = new Uint8Array(N);          // 0 not in yet, 1 in, 2 failed
-  let ready = 0, nextLoad = 0, settled = 0, inflight = 0;
-  let cur = 0, target = 0, raf = 0, dir = 1, snapped = false, idleT = 0, lastPos = -1;
-  const kick = () => { if (!raf) raf = requestAnimationFrame(tick); };
-  const settle = (i, ok) => {
-    fstate[i] = ok ? 1 : 2; settled++; inflight--;
-    while (ready < N && fstate[ready]) ready++;                     // the film plays only as far as the frames are in
-    loadEl.textContent = settled >= N ? 'Rendered sample repair' : 'Loading the film ' + Math.round(settled / N * 100) + '%';
-    pump();
-    if (Math.abs(i - cur) < 14) kick();
-  };
-  const loadFrame = (i) => {
-    const im = new Image();
-    let tries = 0;
-    im.onload = () => settle(i, true);
-    // a dropped request retries twice, then is skipped so the film and the loader never stick
-    im.onerror = () => { if (tries++ < 2) setTimeout(() => { im.src = src(i) + '?r=' + tries; }, 400 * tries); else settle(i, false); };
-    im.src = src(i);
-    frames[i] = im;
-  };
-  function pump() { while (inflight < 6 && nextLoad < N) { inflight++; loadFrame(nextLoad++); } }
-
-  const bmp = new Map(), pend = new Set();
-  const canBitmap = 'createImageBitmap' in window;
-  const AHEAD = small ? 8 : 10, BEHIND = 5, KEEP = small ? 10 : 12;
-  let cw = 0, ch = 0, gen = 0;                                      // gen changes with the canvas size, so late bitmaps of the old size are dropped
-  const decode = (i) => {
-    if (!canBitmap || fstate[i] !== 1 || bmp.has(i) || pend.has(i)) return;
-    pend.add(i);
-    const g = gen, im = frames[i];
-    const sc = Math.max(cw / im.naturalWidth, ch / im.naturalHeight);
-    const w = Math.round(im.naturalWidth * sc), h = Math.round(im.naturalHeight * sc);
-    const job = sc < 0.97
-      ? createImageBitmap(im, { resizeWidth: w, resizeHeight: h, resizeQuality: 'high' }).catch(() => createImageBitmap(im))
-      : createImageBitmap(im);
-    job.then((b) => {
-      pend.delete(i);
-      if (g !== gen || Math.abs(i - cur) > KEEP) { b.close(); return; }
-      const old = bmp.get(i); if (old) old.close();
-      bmp.set(i, b);
-      if (Math.abs(i - cur) < 2.5) kick();
-    }).catch(() => pend.delete(i));
-  };
-  const windowAt = (c) => {
-    const lo = Math.max(0, c - (dir > 0 ? BEHIND : AHEAD)), hi = Math.min(N - 1, c + (dir > 0 ? AHEAD : BEHIND));
-    for (let d = 0; d <= AHEAD; d++) {                              // nearest frames first
-      if (c + d <= hi) decode(c + d);
-      if (d && c - d >= lo) decode(c - d);
-    }
-    for (const [i, b] of bmp) if (Math.abs(i - c) > KEEP) { b.close(); bmp.delete(i); }
-  };
-  // the picture for frame k: its bitmap, else a ready bitmap a frame or two away, else the undecoded image itself
-  const pick = (k) => {
-    if (bmp.has(k)) return bmp.get(k);
-    for (let d = 1; d <= 2; d++) { if (bmp.has(k - d)) return bmp.get(k - d); if (bmp.has(k + d)) return bmp.get(k + d); }
-    if (fstate[k] === 1) return frames[k];
-    for (let d = 1; d < N; d++) { if (k - d >= 0 && fstate[k - d] === 1) return frames[k - d]; if (k + d < N && fstate[k + d] === 1) return frames[k + d]; }
-    return null;
-  };
-  const paintFrame = (im, a) => {
-    const iw = im.naturalWidth || im.width, ih = im.naturalHeight || im.height;
-    const sc = Math.max(cw / iw, ch / ih);
-    const w = iw * sc, h = ih * sc;
-    // the car sits right of centre in the landscape film; narrow windows keep it in frame
-    const bias = portrait ? 0.5 : (cw / ch < 1.3 ? 0.66 : 0.5);
-    ctx.globalAlpha = a;
-    ctx.drawImage(im, (cw - w) * bias, (ch - h) / 2, w, h);
-  };
-  const draw = () => {
-    const pos = Math.min(cur, Math.max(0, ready - 1));
-    const i0 = Math.floor(pos), fr = pos - i0;
-    const a = pick(i0);
-    if (!a) return pos;
-    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
-    paintFrame(a, 1);
-    // two frames are blended only while the film moves slowly; at speed one draw per tick is enough
-    if (fr > 0.02 && Math.abs(pos - lastPos) < 0.5 && bmp.has(i0) && bmp.has(i0 + 1)) paintFrame(bmp.get(i0 + 1), fr);
-    ctx.globalAlpha = 1;
-    if (poster.style.visibility !== 'hidden') poster.style.visibility = 'hidden';
-    lastPos = pos;
-    return pos;
-  };
-  const size = () => {
-    measure();
-    const r = canvas.getBoundingClientRect();
-    if (!r.width || !r.height) return;
-    // never draw the film larger than its source: the canvas is capped where the frame still covers it 1:1
-    const pr = Math.max(0.5, Math.min(dprCap, SRC_W / r.width, SRC_H / r.height));
-    const w = Math.round(r.width * pr), h = Math.round(r.height * pr);
-    if (w === cw && h === ch) return;                               // a phone's address bar sliding away is not a resize of the stage
-    cw = canvas.width = w; ch = canvas.height = h; gen++;
-    for (const b of bmp.values()) b.close();
-    bmp.clear(); pend.clear(); lastPos = -1;
-    kick();
-  };
-
-  let lastBeat = 0, hudKey = '';
-  const railF = railLis.map(() => -1);
-  const hud = (p) => {
-    let st = 0;
-    while (st < CUT.length && p >= CUT[st]) st++;
-    if (st !== lastBeat) {
-      beats.forEach((b, i) => b.classList.toggle('is-on', i === st));
-      lastBeat = st;
-    }
-    const key = st + '|' + (p > 0.01);
-    if (key !== hudKey) {
-      hudKey = key;
-      railLis.forEach((li, i) => li.classList.toggle('is-on', st === i + 1));
-      if (cueEl) cueEl.style.opacity = p > 0.01 ? 0 : 1;
-    }
-    railLis.forEach((li, i) => {
-      const f = Math.round(clamp01((p - CUT[i]) / ((i < CUT.length - 1 ? CUT[i + 1] : 0.96) - CUT[i])) * 100) / 100;
-      if (f !== railF[i]) { railF[i] = f; li.style.setProperty('--f', f); }
-    });
-  };
-  function tick() {
-    raf = 0;
-    const d = target - cur;
-    if (Math.abs(d) > 0.001) dir = d > 0 ? 1 : -1;
-    // Lenis already eases the scroll, so the film follows it exactly; without it (or when settling) the film eases itself
-    cur = (reduce || (lenisRef && !snapped) || Math.abs(d) < 0.01) ? target : cur + d * (snapped ? 0.3 : 0.14);
-    windowAt(Math.round(cur));
-    hud(draw() / (N - 1));
-    if (Math.abs(target - cur) > 0.005) kick();
-  }
-  const onFilmScroll = () => {
-    const y = scrollY;
-    target = clamp01((y - filmTop) / span) * (N - 1);
-    // when the scroll stops, the film settles on a whole frame: a rendered frame is sharper than a blend of two
-    snapped = false; clearTimeout(idleT);
-    idleT = setTimeout(() => { target = Math.round(target); snapped = true; kick(); }, 170);
-    kick();
-    nav.classList.toggle('is-solid', y > filmTop + span - 2);
-    const heroOn = y < filmTop + span + innerHeight * 0.5;
-    if (heroOn !== vis.hero) { vis.hero = heroOn; syncDock(); }
-  };
-  addEventListener('scroll', onFilmScroll, { passive: true });
-  addEventListener('resize', () => { size(); onFilmScroll(); });
-  addEventListener('load', () => { measure(); onFilmScroll(); });
-  size(); pump(); onFilmScroll(); hud(0); syncDock();
+  /* Service cards that ask their own question on WhatsApp. */
+  $$('[data-ask]').forEach((a) => { a.href = waLink(`Hello Luxury Auto. ${a.dataset.ask}`); });
 
   /* ---------- Damage map ---------- */
   /* Top view, front up. Left/right are the driver's (left-hand drive). Panels are
@@ -376,18 +144,15 @@
     // DOM order is the tab order: panels, glass, grille and lights, mirrors, wheels.
     PANELS.forEach((p, i) => {
       const el = svgEl('path', { d: p.d, class: 'panel' });
-      el.style.setProperty('--d', `${0.45 + i * 0.06}s`);
       makeButton(el, p);
       gPanels.appendChild(el);
     });
     SIDE_GLASS.forEach((d) => {
       const el = svgEl('path', { d, class: 'glass' });
-      el.style.setProperty('--d', '1.1s');
       gGlass.appendChild(el);
     });
     GLASS.forEach((g) => {
       const el = svgEl('path', { d: g.d, class: 'glass part' });
-      el.style.setProperty('--d', '1.1s');
       makeButton(el, g);
       gGlass.appendChild(el);
     });
@@ -402,7 +167,6 @@
     });
     MIRRORS.forEach((m) => {
       const el = svgEl('path', { d: m.d, class: 'mirror' });
-      el.style.setProperty('--d', '1.2s');
       gMirrors.appendChild(el);
       const hit = svgEl('rect', { x: m.hx, y: 292, width: 52, height: 50, class: 'hit' });
       makeButton(hit, m, [el]);
@@ -410,7 +174,6 @@
     });
     WHEELS.forEach((w) => {
       const el = svgEl('rect', { x: w.x, y: w.y, width: 26, height: 110, rx: 9, class: 'wheel' });
-      el.style.setProperty('--d', '1.2s');
       gWheels.appendChild(el);
       const hit = svgEl('rect', { x: w.hx, y: w.y - 10, width: 52, height: 130, class: 'hit' });
       makeButton(hit, w, [el]);
@@ -421,12 +184,8 @@
       ['path', { d: 'M262 84 C266 170 268 240 264 292', class: 'crease' }],
     ].forEach(([t, a]) => gTrim.appendChild(svgEl(t, a)));
     gTrim.classList.add('trim');
-    gTrim.style.setProperty('--d', '1.3s');
     gParts.classList.add('trim');
-    gParts.style.setProperty('--d', '1.25s');
 
-    if (reduce) car.classList.add('is-drawn');
-    else onceVisible(car, () => car.classList.add('is-drawn'), 0.25);
   }
 
   function setReadout(name) {
@@ -473,7 +232,7 @@
     const li = document.createElement('li');
     li.className = 'job-item';
     li.innerHTML = `<span class="name">${v.name}</span>
-      <button type="button" class="remove" aria-label="Remove ${v.name}"><i class="ph ph-x" aria-hidden="true"></i></button>
+      <button type="button" class="remove" aria-label="Remove ${v.name}">${icon('x')}</button>
       <div class="seg" role="group" aria-label="What happened to the ${v.name.toLowerCase()}"></div>`;
     const seg = $('.seg', li);
     v.opts.forEach((o) => {
@@ -561,7 +320,7 @@
   refreshCard();
 
   /* ---------- Service booking ---------- */
-  const WORK = ['Scheduled service', 'Oil and filters', 'Brakes', 'A/C service', 'Warning light', 'Forty-point check-up'];
+  const WORK = ['Scheduled service', 'Oil change', 'Brakes', 'A/C service', 'Warning light', 'Forty-point check-up'];
   const workOn = new Set();
   const workRow = $('[data-work]');
   const workBtns = new Map();
@@ -627,7 +386,7 @@
     ];
     const ready = workOn.size > 0 && day;
     svcPreview.textContent = lines.join('\n');
-    setSend(svcSend, ready ? lines.join('\n') : '', '#service');
+    setSend(svcSend, ready ? lines.join('\n') : '', '#book');
     svcHint.textContent = ready ? 'Sends to +971 50 184 0030 on WhatsApp.' : 'Choose the work and a day to send the request.';
   }
   svcSend.addEventListener('click', (e) => {
@@ -643,174 +402,64 @@
   }));
   renderSvc();
 
-  /* ---------- Repair tracker ---------- */
-  /* The estimate card is always in the layout and only changes state, so nothing below it
-     moves when the demo reaches the approval step. Days run Monday to Thursday, 9 AM to 6 PM:
-     open hours on both his own site (Sat to Thu, 8 to 6) and Google (Mon to Sat, 9 to 7). */
-  const STAGES = [
-    { label: 'Checked in', time: 'Mon 09:10', msg: '<b>Checked in at Bay 4.</b> Arrival photos sent to your WhatsApp.' },
-    { label: 'Inspected', time: 'Mon 11:35', msg: '<b>Inspection done.</b> Front bumper, right headlight and right fender. Findings and photos sent.' },
-    { label: 'Your approval', time: 'Mon 14:02', approval: true, msg: '<b>You approved the estimate</b> on your phone at 14:02. Work starts.' },
-    { label: 'Parts', time: 'Tue 10:20', msg: '<b>Genuine parts ordered.</b> Headlight and brackets arrive Wednesday morning.' },
-    { label: 'Bodywork', time: 'Tue 15:40', msg: '<b>Bumper repaired and refitted.</b> Panel gaps checked.' },
-    { label: 'Paint', time: 'Wed 12:05', msg: '<b>In the paint booth.</b> Colour matched to the original paint code.' },
-    { label: 'Quality check', time: 'Thu 10:30', msg: '<b>Road test and forty-point check passed.</b>' },
-    { label: 'Ready', time: 'Thu 16:00', msg: '<b>Ready for collection.</b> Washed and ready to drive away.' },
-  ];
-  const EST_TITLE = {
-    pending: 'Estimate, sent after inspection',
-    awaiting: 'Estimate ready. Nothing starts until you approve.',
-    call: 'Waiting for your call. Nothing is touched until you approve.',
-    approved: 'Estimate approved Mon 14:02',
-    done: 'Estimate approved Mon 14:02',
-  };
-  const rail = $('[data-rail]');
-  const detail = $('[data-detail]');
-  const tracker = $('[data-tracker]');
-  const est = $('[data-estimate]');
-  const estTitle = $('[data-est-title]');
-  const approveBtn = $('[data-approve]', est);
-  const callBtn = $('[data-callme]', est);
-  const replayBtn = $('[data-replay]', est);
-  let step = -1;
-  let timer = 0;
-  let approved = false;
-  let called = false;
-  function setEst(state) {
-    est.className = `estimate is-${state}`;
-    estTitle.textContent = EST_TITLE[state];
-    approveBtn.disabled = !(state === 'awaiting' || state === 'call');
-    callBtn.disabled = state !== 'awaiting';
-    replayBtn.hidden = state !== 'done';
-  }
-  approveBtn.addEventListener('click', () => { approved = true; showStage(); });
-  callBtn.addEventListener('click', () => {
-    called = true;
-    setEst('call');
-    detail.innerHTML = '<b>Your service advisor will call you.</b> The car waits until you approve.';
-  });
-  replayBtn.addEventListener('click', () => start());
-
-  STAGES.forEach((s) => {
-    const li = document.createElement('li');
-    li.innerHTML = `<span class="dot"><i class="ph ph-check" aria-hidden="true"></i></span><span class="lbl">${s.label}</span><span class="time"></span>`;
-    rail.appendChild(li);
-  });
-  const lis = $$('li', rail);
-
-  function paint() {
-    lis.forEach((li, i) => {
-      li.classList.toggle('done', i < step || (i === step && i === STAGES.length - 1));
-      li.classList.toggle('now', i === step && i !== STAGES.length - 1);
-      $('.time', li).textContent = i < step || (i === step && !(STAGES[i].approval && !approved)) ? STAGES[i].time : '';
-    });
-    rail.style.setProperty('--p', String(Math.max(0, step) / (STAGES.length - 1)));
-  }
-
-  function showStage() {
-    clearTimeout(timer);
-    const s = STAGES[step];
-    paint();
-    if (s.approval && !approved) {
-      if (!called) {
-        setEst('awaiting');
-        detail.innerHTML = '<b>Estimate sent to your phone.</b> Approve it, or ask for a call first.';
-      }
-      return;
-    }
-    detail.innerHTML = s.msg;
-    const last = step === STAGES.length - 1;
-    setEst(approved ? (last ? 'done' : 'approved') : 'pending');
-    if (last) return;
-    timer = setTimeout(() => { step++; showStage(); }, reduce ? 200 : 1150);
-  }
-  function start() {
-    clearTimeout(timer);
-    approved = false;
-    called = false;
-    step = 0;
-    showStage();
-  }
-  paint();
-  setEst('pending');
-  onceVisible(tracker, start, 0.35);
-  $('[data-track-form]').addEventListener('submit', (e) => { e.preventDefault(); start(); });
-
-  /* ---------- Before / after ---------- */
+  /* ---------- Our work: drag between the damaged car and the finished one ---------- */
+  /* The garage shot each pair from a different angle, so the halves do not line up mid-drag;
+     matched-angle photos from the next repairs would fix that. */
   const CASES = [
-    'https://luxury-auto-service.com/wp-content/uploads/2024/07/s1.jpg',
-    'https://luxury-auto-service.com/wp-content/uploads/2024/07/s2.jpg',
-    'https://luxury-auto-service.com/wp-content/uploads/2024/07/s3.jpg',
+    { k: 's1', car: 'Porsche Cayenne', dmg: 'front right corner damaged' },
+    { k: 's2', car: 'Range Rover Sport', dmg: 'front right corner damaged' },
+    { k: 's3', car: 'Mercedes-Benz C200', dmg: 'front left bumper damaged' },
   ];
-  /* Side by side, not a wipe: each composite's two halves are shot from different angles,
-     so a divider across them joins two unrelated frames. */
-  const pair = $('[data-pair]');
+  const cmp = $('[data-compare]');
+  const range = $('[data-range]');
   const before = $('[data-before]');
   const after = $('[data-after]');
-  const tabs = $$('[data-case]');
-  const setCase = (i) => {
-    const url = `url("${CASES[i]}")`;
-    before.style.backgroundImage = url;
-    after.style.backgroundImage = url;
-    tabs.forEach((b) => {
-      const on = +b.dataset.case === i;
-      b.setAttribute('aria-selected', String(on));
-      b.tabIndex = on ? 0 : -1;
-    });
-    pair.setAttribute('aria-labelledby', `case-${i}`);
-    if (!reduce && pair.animate) pair.animate([{ opacity: 0.25 }, { opacity: 1 }], { duration: 380, easing: 'ease-out' });
-  };
-  setCase(0);
-  tabs.forEach((b, i) => {
-    b.addEventListener('click', () => setCase(i));
-    b.addEventListener('keydown', (e) => {
-      const d = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[e.key];
-      if (!d) return;
-      e.preventDefault();
-      const n = tabs[(i + d + tabs.length) % tabs.length];
-      n.focus();
-      n.click();
-    });
-  });
+  const caseBtns = $$('[data-case]');
+  const setX = (v) => cmp.style.setProperty('--x', `${v}%`);
+  range.addEventListener('input', () => { cmp.classList.remove('is-hint'); setX(range.value); });
+  CASES.forEach((c) => ['before', 'after'].forEach((s) => { const im = new Image(); im.src = `img/${c.k}_${s}.webp`; }));
+  caseBtns.forEach((b) => b.addEventListener('click', () => {
+    const c = CASES[+b.dataset.case];
+    before.src = `img/${c.k}_before.webp`;
+    before.alt = `${c.car} before the repair, ${c.dmg}`;
+    after.src = `img/${c.k}_after.webp`;
+    after.alt = `The same ${c.car} after the repair`;
+    caseBtns.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    range.value = 50;
+    setX(50);
+  }));
+  // One slow sweep the first time the photos come into view shows the line can be moved.
+  if (!reduce && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver(([e]) => {
+      if (!e.isIntersecting) return;
+      io.disconnect();
+      if (range.value !== '50') return;
+      cmp.classList.add('is-hint');
+      [[350, 28], [1350, 66], [2350, 50]].forEach(([t, v]) => setTimeout(() => { if (cmp.classList.contains('is-hint')) setX(v); }, t));
+      setTimeout(() => cmp.classList.remove('is-hint'), 3350);
+    }, { threshold: 0.6 });
+    io.observe(cmp);
+  }
 
-  /* ---------- Motion layer (optional) ---------- */
-  if (reduce) return;
-  const load = (src) => new Promise((res, rej) => {
-    const s = document.createElement('script');
-    s.src = src; s.async = true; s.onload = res; s.onerror = rej;
-    document.head.appendChild(s);
-  });
-  const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 3500));
-  Promise.race([
-    Promise.all([
-      load('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js').then(() => load('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js')),
-      load('https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.min.js'),
-    ]),
-    timeout,
-  ]).then(enhance).catch(() => { /* page already works without the motion layer */ });
+  /* ---------- Header: solid once the hero heading has scrolled under it ---------- */
+  const hdr = $('[data-hdr]');
+  if (hdr && 'IntersectionObserver' in window) {
+    new IntersectionObserver(([e]) => hdr.classList.toggle('is-solid', !e.isIntersecting), { rootMargin: '-80px 0px 0px 0px' }).observe($('.hero-copy h1'));
+  }
 
-  function enhance() {
-    const { gsap, ScrollTrigger, Lenis } = window;
-    if (!gsap || !ScrollTrigger) return;
-    gsap.registerPlugin(ScrollTrigger);
-
-    if (Lenis && !matchMedia('(pointer: coarse)').matches) {
-      const lenis = new Lenis({ lerp: 0.11, smoothWheel: true });
-      lenisRef = lenis;
-      lenis.on('scroll', ScrollTrigger.update);
-      gsap.ticker.add((t) => lenis.raf(t * 1000));
-      gsap.ticker.lagSmoothing(0);
-      // The skip link keeps native behaviour so keyboard focus actually moves into the page.
-      $$('a[href^="#"]:not(.skip)').forEach((a) => a.addEventListener('click', (e) => {
-        const id = a.getAttribute('href') || '';
-        if (!id.startsWith('#') || id.length < 2 || a.getAttribute('aria-disabled') === 'true') return;
-        const t = $(id);
-        if (!t) return;
-        e.preventDefault();
-        lenis.scrollTo(t, { offset: id === '#top' ? 0 : -72, duration: 1.3 });
-      }));
-    }
-
-    gsap.from('[data-wm]', { yPercent: 70, ease: 'none', scrollTrigger: { trigger: '[data-foot]', start: 'top bottom', end: 'top 45%', scrub: true } });
+  /* ---------- Phone dock: after the hero, out of the way of the footer ---------- */
+  const dock = $('[data-dock]');
+  if (dock && 'IntersectionObserver' in window) {
+    const seen = { hero: true, foot: false };
+    const sync = () => {
+      const on = !seen.hero && !seen.foot;
+      dock.classList.toggle('is-on', on);
+      dock.inert = !on;
+    };
+    new IntersectionObserver(([e]) => { seen.hero = e.isIntersecting; sync(); }, { threshold: 0 }).observe($('[data-hero-cta]'));
+    new IntersectionObserver(([e]) => { seen.foot = e.isIntersecting; sync(); }, { threshold: 0 }).observe($('[data-foot]'));
+    sync();
+  } else if (dock) {
+    dock.classList.add('is-on');
   }
 })();

@@ -4,154 +4,136 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Luxury Auto Service Centre | Concept</title>
-<meta name="description" content="A design concept for Luxury Auto Service Centre, Dubai. Classic, American, European and luxury car repair since 2006.">
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#0d0e10">
+<meta name="description" content="A website concept for Luxury Auto Service Centre, Dubai: accident repair, insurance claims, factory paint and servicing for luxury cars.">
+<meta name="theme-color" content="#08090a">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Luxury Auto Service Centre, a website concept">
-<meta property="og:description" content="Agency standard. Without the agency. Tap the damage and ask for a price, or book a service, on WhatsApp.">
+<meta property="og:description" content="Accident repair for luxury cars, insurance handled. A concept by Mehdi Besnier.">
 <meta property="og:image" content="https://besniermehdi0-dotcom.github.io/luxury-auto-concept/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23d8312b'/%3E%3Ctext x='32' y='43' font-family='Arial Black,Arial' font-weight='900' font-size='28' text-anchor='middle' fill='%23f4f4f2'%3ELA%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2308090a'/%3E%3Crect x='14' y='4' width='5' height='24' transform='rotate(6 16 16)' fill='%232f6df0'/%3E%3C/svg%3E">
+<script>
+  /* Accent route for the review: ?accent=tape | signal | lime | red. The page works without this script. */
+  (function () { var d = document.documentElement, m = /[?&]accent=(tape|signal|lime|red)/.exec(location.search);
+    d.dataset.accent = m ? m[1] : 'tape'; d.classList.add('js');
+    // the hero starts in its pre-intro state so nothing paints and then vanishes; motion.js (or a 3.5 s timer) lifts it
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) { d.classList.add('intro'); setTimeout(function () { d.classList.remove('intro'); }, 3500); } })();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<!-- Icon font loads without blocking first paint; the icons are decoration, every control has a text label. -->
-<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css" media="print" onload="this.media='all'">
-<noscript><link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css"></noscript>
-<link rel="preload" as="image" href="frames/main/f001.webp" media="(min-aspect-ratio: 4/5)" fetchpriority="high">
-<link rel="preload" as="image" href="frames/portrait_s/p001.webp" media="(max-aspect-ratio: 4/5)" fetchpriority="high">
-<link rel="stylesheet" href="styles.css?v=13">
-<script>document.documentElement.classList.add('js');setTimeout(function(){if(!window.__app)document.documentElement.classList.remove('js')},3000);</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,200..700&family=Instrument+Serif:ital@0;1&family=Geist:wght@300..600&family=Geist+Mono:wght@400..500&display=swap">
+<link rel="preload" as="image" href="img/hero_still.webp">
+<link rel="stylesheet" href="styles.css?v=14">
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4.5 19.5l1.2-3.6A8 8 0 1 1 8.4 18.6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9.2 9.4c.2 1.9 1.6 3.5 3.6 4.2l1-.9 1.6.9-.5 1.4c-3.3-.2-6-2.9-6.2-6.2l1.4-.5.9 1.6z" fill="currentColor"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><path d="M6.6 3.8l2.6-.5 1.5 4-1.9 1.4a11 11 0 0 0 6.5 6.5l1.4-1.9 4 1.5-.5 2.6a2 2 0 0 1-2.1 1.6C11.3 18.4 5.6 12.7 5 5.9a2 2 0 0 1 1.6-2.1z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h15M13.5 6.5L19 12l-5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/></symbol>
+  <symbol id="i-out" viewBox="0 0 24 24"><path d="M7.5 16.5L16.5 7.5M9 7.5h7.5V15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/></symbol>
+  <symbol id="i-drag" viewBox="0 0 24 24"><path d="M9 7l-5 5 5 5M15 7l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M7 7l10 10M17 7L7 17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></symbol>
+  <symbol id="i-wrench" viewBox="0 0 24 24"><path d="M14.5 4.5a4.5 4.5 0 0 0-4.2 6.1L4 16.9 7.1 20l6.3-6.3a4.5 4.5 0 0 0 6.1-4.2l-2.8 2.8-2.9-.8-.8-2.9z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2.8l2.7 6 6.5.6-4.9 4.3 1.5 6.4L12 16.8 6.2 20.1l1.5-6.4-4.9-4.3 6.5-.6z" fill="currentColor"/></symbol>
+</svg>
 
 <a class="skip" href="#main">Skip to content</a>
 
-<div class="ribbon" role="note">
-  <p>Website concept<span class="long"> for Luxury Auto Service Centre, prepared</span> by Mehdi Besnier. Not the live site.</p>
-</div>
-
-<header class="nav" data-nav>
-  <div class="brand-row">
-    <a class="brand" href="#top" aria-label="Luxury Auto Service Centre, back to top">
-      <span class="brand-mark">Luxury Auto</span>
-      <span class="brand-sub">Service Centre, Dubai</span>
-    </a>
-    <span class="concept-tag" role="note">Concept<span class="long"> by Mehdi Besnier</span></span>
-  </div>
-  <nav class="nav-links" aria-label="Sections">
-    <a href="#damage">Damage check</a>
-    <a href="#service">Book a service</a>
-    <a href="#track">Track a repair</a>
-    <a href="#results">Results</a>
-    <a href="#visit">Visit</a>
+<header class="hdr" data-hdr>
+  <a class="mark" href="#top" aria-label="Luxury Auto Service Centre, back to top"><span class="mark-a">Luxury Auto</span><span class="mark-b">Service Centre · Dubai</span></a>
+  <nav class="nav" aria-label="Sections">
+    <a href="#claims"><span class="roll" data-t="Claims">Claims</span></a>
+    <a href="#damage"><span class="roll" data-t="Damage check">Damage check</span></a>
+    <a href="#work"><span class="roll" data-t="Work">Work</span></a>
+    <a href="#colour"><span class="roll" data-t="Colour">Colour</span></a>
+    <a href="#services"><span class="roll" data-t="Service">Service</span></a>
+    <a href="#visit"><span class="roll" data-t="Visit">Visit</span></a>
   </nav>
-  <a class="btn btn-ghost btn-sm nav-cta" href="https://wa.me/971501840030" target="_blank" rel="noopener"><i class="ph ph-whatsapp-logo" aria-hidden="true"></i><span>WhatsApp us</span></a>
+  <div class="hdr-end">
+    <p class="status" data-status><span class="status-dot"></span><span data-status-text>Mon to Sat, 9 to 7</span></p>
+    <a class="btn btn-accent btn-sm" data-magnet href="https://wa.me/971501840030?text=Hello%20Luxury%20Auto%2C%20I%20have%20a%20question." target="_blank" rel="noopener"><svg class="i"><use href="#i-chat"/></svg><span class="roll" data-t="WhatsApp">WhatsApp</span></a>
+  </div>
 </header>
+<p class="concept-tag" role="note">Concept<span class="long"> by Mehdi Besnier, not the live site</span></p>
 
 <main id="main">
 
-<!-- HERO -->
-<!-- HERO FILM: one car, one bay, scrubbed by scroll from check-in to ready.
-     A Blender render of a stand-in car (credit in the footer), not a photo of his workshop. -->
-<section class="film" id="top" data-film-section aria-label="A sample repair, from check-in to ready, rendered for this concept">
-  <div class="film-stage">
-    <picture>
-      <source media="(max-aspect-ratio: 4/5)" srcset="frames/portrait_s/p001.webp">
-      <img class="film-poster" data-poster src="frames/main/f001.webp" alt="A red coupe in a dark workshop bay, its front left corner scraped and dented" fetchpriority="high" decoding="async">
-    </picture>
-    <canvas class="film-canvas" data-film aria-hidden="true"></canvas>
-    <div class="hero-shade" aria-hidden="true"></div>
-    <div class="film-copy wrap">
-      <div class="beat beat-hero is-on" data-beat="0">
-        <h1 class="hero-title"><span class="line"><span>Agency standard.</span></span><span class="line"><span>Without the agency.</span></span></h1>
-        <p class="hero-sub">Classic, American, European and luxury cars, repaired, serviced and painted since 2006.</p>
-        <div class="hero-ctas">
-          <a class="btn btn-primary" href="#damage">Mark the damage <i class="ph ph-arrow-down-right" aria-hidden="true"></i></a>
-          <a class="btn btn-ghost" href="#service"><i class="ph ph-wrench" aria-hidden="true"></i>Book a service</a>
-        </div>
-        <a class="hero-rating" href="https://maps.google.com/?cid=17301577613314053593" target="_blank" rel="noopener"><b>4.5</b><span class="pips" aria-hidden="true"><i></i><i></i><i></i><i></i><i class="half"></i></span><span>337 Google reviews</span></a>
-      </div>
-      <div class="beat" data-beat="1">
-        <p class="beat-label"><b>01</b>Check-in</p>
-        <h2 class="beat-title">Marked with you. Priced before work starts.</h2>
-        <p class="beat-text">Every scratch and dent is recorded at check-in, and nothing starts until you approve the estimate.</p>
-      </div>
-      <div class="beat" data-beat="2">
-        <p class="beat-label"><b>02</b>Bodywork</p>
-        <h2 class="beat-title">The dent comes out. The panel is prepared.</h2>
-        <p class="beat-text">Accident repair, denting and chassis repair.</p>
-      </div>
-      <div class="beat" data-beat="3">
-        <p class="beat-label"><b>03</b>Paint</p>
-        <h2 class="beat-title">Painted, then polished.</h2>
-        <p class="beat-text">Body paint, rim painting and polishing.</p>
-      </div>
-      <div class="beat" data-beat="4">
-        <p class="beat-label"><b>04</b>Ready</p>
-        <h2 class="beat-title">Ready to collect.</h2>
-        <p class="beat-text">Found us online? 20% off labour and 10% off parts.</p>
-        <div class="hero-ctas">
-          <a class="btn btn-primary" href="#damage">Mark the damage <i class="ph ph-arrow-down-right" aria-hidden="true"></i></a>
-          <a class="btn btn-ghost" href="#service"><i class="ph ph-wrench" aria-hidden="true"></i>Book a service</a>
-        </div>
-      </div>
+<!-- HERO: a live-rendered close-up of a black rear haunch under the workshop's strip lights. Painter's tape splits it:
+     repaired on the left, as it came in on the right (a dent and a scrape that bend the reflections, the way a body
+     shop reads damage under a light board). The pointer is the inspection light. -->
+<section class="hero" id="top" aria-labelledby="hero-title" data-hero>
+  <div class="hero-media" data-cursor="Inspect" data-cursor-ring>
+    <img class="hero-still" src="img/hero_still.webp" alt="" width="1920" height="1200" fetchpriority="high">
+    <canvas class="hero-gl" data-paint aria-label="A black car panel under workshop lights. Left of a strip of blue tape the panel is repaired; right of it a dent and a scrape bend the reflections." role="img"></canvas>
+  </div>
+  <div class="hero-tags" aria-hidden="true">
+    <span class="tag-l" data-hero-tag><i></i>Repaired in our shop</span>
+    <span class="tag-r" data-hero-tag><i></i>As it came in</span>
+  </div>
+  <div class="hero-copy">
+    <h1 id="hero-title" data-hero-title><span class="ln"><span>Accident repair</span></span><span class="ln"><span>for luxury cars,</span></span><span class="ln"><em>insurance handled.</em></span></h1>
+  </div>
+  <div class="hero-foot" data-hero-foot>
+    <p class="hero-lede">Body, paint and mechanics for luxury cars in Al Quoz since 2006. Send photos on WhatsApp: we price the job, send the estimate to your insurer and repair the car in our own body and paint shop.</p>
+    <div class="ctas" data-hero-cta>
+      <a class="btn btn-accent" data-magnet href="https://wa.me/971501840030?text=Hello%20Luxury%20Auto%2C%20I%20have%20had%20an%20accident%20and%20would%20like%20to%20start%20an%20insurance%20claim." target="_blank" rel="noopener"><svg class="i"><use href="#i-chat"/></svg><span class="roll" data-t="Start a claim">Start a claim</span></a>
+      <a class="btn btn-line" data-magnet href="#damage"><span class="roll" data-t="Mark the damage">Mark the damage</span><svg class="i"><use href="#i-arrow"/></svg></a>
     </div>
-    <ol class="film-rail" aria-hidden="true">
-      <li><span>Check-in</span><i></i></li>
-      <li><span>Bodywork</span><i></i></li>
-      <li><span>Paint</span><i></i></li>
-      <li><span>Ready</span><i></i></li>
-    </ol>
-    <p class="film-note" aria-hidden="true"><span data-film-load>Rendered sample repair</span></p>
-    <p class="film-cue" aria-hidden="true">Scroll to repair it</p>
   </div>
 </section>
 
-<!-- PROOF -->
-<section class="proof" aria-label="The workshop in numbers">
-  <dl class="proof-row wrap">
-    <div class="stat"><dt>Open since</dt><dd>2006</dd></div>
-    <div class="stat"><dt>Bosch Car Service since</dt><dd>2008</dd></div>
-    <div class="stat"><dt>Garages</dt><dd>3</dd></div>
-    <div class="stat"><dt>Technicians</dt><dd>18</dd></div>
-    <div class="stat"><dt>Repairs completed</dt><dd><span data-count="5000">5,000</span>+</dd></div>
-  </dl>
+<section class="facts" aria-label="At a glance">
+  <div class="fact"><p class="fact-n"><span data-count="4.5" data-dec="1">4.5</span><svg class="i star"><use href="#i-star"/></svg></p><p class="fact-l">Google, 340 reviews<br>November 2026</p></div>
+  <div class="fact"><p class="fact-n"><span data-count="18">18</span>+</p><p class="fact-l">Technicians<br>in three garages</p></div>
+  <div class="fact"><p class="fact-n"><span data-count="5000" data-fmt="comma">5,000</span>+</p><p class="fact-l">Repairs<br>completed</p></div>
+  <div class="fact"><p class="fact-n"><span data-count="2008" data-from="1996">2008</span></p><p class="fact-l">Bosch-certified<br>service garage since</p></div>
 </section>
 
-<!-- DAMAGE MAP -->
-<section class="damage" id="damage" aria-labelledby="damage-title">
-  <div class="wrap damage-grid">
-    <div class="damage-head">
-      <p class="eyebrow">Damage check</p>
-      <h2 id="damage-title" class="h2" data-reveal>Tap the damage. Ask for a price.</h2>
-      <p class="lede" data-reveal>Mark each panel, add your car, and send the list to the workshop on WhatsApp. Photos can follow in the chat.</p>
-    </div>
+<!-- CHAPTER: the garage's best photograph, full width under the one grade the page uses for every photo. -->
+<section class="chapter" aria-label="About the workshop">
+  <div class="chapter-media"><img class="grade" src="img/bay_1440.webp" srcset="img/bay_820.webp 820w, img/bay_1440.webp 1440w" sizes="100vw" alt="A black coupe in the paint bay at Luxury Auto, Al Quoz" width="1440" height="1704" loading="lazy" decoding="async" data-parallax></div>
+  <div class="chapter-copy">
+    <p class="idx"><span>(01)</span>The workshop</p>
+    <p class="statement-text" data-words>One garage in 2006, three today. Technicians trained on Bosch courses, factory-specified parts and the highest-quality paints, so the repair matches what the agency would deliver.</p>
+  </div>
+</section>
 
-    <figure class="car-stage" data-car-stage>
+<!-- CLAIMS: pinned on wide screens, the four steps pass sideways while the accent line draws. -->
+<section class="claims" id="claims" aria-labelledby="claims-title" data-claims>
+  <div class="claims-pin" data-claims-pin>
+    <div class="claims-head">
+      <p class="idx"><span>(02)</span>Insurance claims</p>
+      <h2 id="claims-title" data-lines>Between your photos and the repair, <em>we deal with your insurer.</em></h2>
+      <a class="btn btn-accent" data-magnet href="https://wa.me/971501840030?text=Hello%20Luxury%20Auto%2C%20I%20have%20had%20an%20accident%20and%20would%20like%20to%20start%20an%20insurance%20claim." target="_blank" rel="noopener"><svg class="i"><use href="#i-chat"/></svg><span class="roll" data-t="Start a claim on WhatsApp">Start a claim on WhatsApp</span></a>
+    </div>
+    <div class="claims-rail">
+      <span class="claims-line" aria-hidden="true"><span data-claims-line></span></span>
+      <ol class="claims-track" data-claims-track>
+        <li class="step"><span class="step-n">01</span><h3>Police report</h3><p>Report the accident to Dubai Police. Minor accidents can be reported in the Dubai Police app.</p></li>
+        <li class="step"><span class="step-n">02</span><h3>Photos</h3><p>Send photos of the damage and your policy details on WhatsApp.</p></li>
+        <li class="step"><span class="step-n">03</span><h3>Approval</h3><p>We send the estimate to your insurer and follow it up until it is approved.</p></li>
+        <li class="step"><span class="step-n">04</span><h3>Repair</h3><p>Body and paint in our own shop. We message you when the car is ready to collect.</p></li>
+        <li class="step step-self"><span class="step-n">or</span><h3>Paying yourself?</h3><p>Send the same photos. You get a price for each panel before any work starts.</p><p class="offer">20% off labour and 10% off parts when you book online</p></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- DAMAGE CHECK: a technical drawing; each panel is a button and the job card writes the WhatsApp message. -->
+<section class="sec damage" id="damage" aria-labelledby="damage-title">
+  <div class="sec-head">
+    <p class="idx"><span>(03)</span>Damage check</p>
+    <h2 id="damage-title" data-lines>Tap the damage. Get a price on WhatsApp.</h2>
+    <p class="sec-lede">Mark each panel, light or window, say who is paying, and send the list to the workshop. Photos can follow in the chat.</p>
+  </div>
+  <div class="damage-grid">
+    <figure class="car-stage" data-car-stage data-cursor="Tap a panel">
+      <div class="drawing-frame" aria-hidden="true"><span>Plan view</span><span>Scale 1:25</span><span>Sheet 01</span></div>
       <svg class="car" data-car viewBox="0 0 420 900" role="group" aria-label="Top view of a car. Each panel is a button.">
-        <defs>
-          <clipPath id="bodyClip"><path data-body-path d=""/></clipPath>
-          <linearGradient id="metal" gradientUnits="userSpaceOnUse" x1="30" y1="0" x2="390" y2="0">
-            <stop offset="0" stop-color="#ffffff" stop-opacity=".045"/>
-            <stop offset=".5" stop-color="#ffffff" stop-opacity=".13"/>
-            <stop offset="1" stop-color="#ffffff" stop-opacity=".045"/>
-          </linearGradient>
-          <linearGradient id="lacquer" gradientUnits="userSpaceOnUse" x1="30" y1="0" x2="390" y2="0">
-            <stop offset="0" stop-color="#8f1d19"/>
-            <stop offset=".46" stop-color="#e2463f"/>
-            <stop offset=".54" stop-color="#d8312b"/>
-            <stop offset="1" stop-color="#8f1d19"/>
-          </linearGradient>
-          <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#2a3138"/>
-            <stop offset=".55" stop-color="#14181c"/>
-            <stop offset="1" stop-color="#1d2329"/>
-          </linearGradient>
-        </defs>
+        <defs><clipPath id="bodyClip"><path data-body-path d=""/></clipPath></defs>
         <line class="axis" x1="210" y1="6" x2="210" y2="894"/>
         <g data-wheels></g>
         <g data-panels clip-path="url(#bodyClip)"></g>
@@ -167,306 +149,272 @@
       <figcaption class="car-readout" aria-live="polite"><span data-readout>Tap any panel</span></figcaption>
     </figure>
 
-    <aside class="jobcard" aria-labelledby="jobcard-title">
-      <header class="jobcard-head">
-        <h3 id="jobcard-title">Your job card</h3>
-        <span class="count" data-count-badge>0 items</span>
+    <aside class="panel jobcard" aria-labelledby="jobcard-title">
+      <header class="panel-head">
+        <h3 id="jobcard-title">Job card</h3>
+        <span class="tag" data-count-badge>0 items</span>
       </header>
-
-      <div class="job-empty" data-empty>
-        <p>Tap a panel on the car to start. Not body damage? Choose from the options below.</p>
-      </div>
+      <p class="job-empty" data-empty>Tap a panel on the car to start. Not body damage? Pick from the list below.</p>
       <ul class="job-list" data-job-list></ul>
-
-      <fieldset class="chips">
+      <fieldset class="group">
         <legend>Something else</legend>
         <div class="chip-row" data-chips></div>
       </fieldset>
-
       <div class="claim" data-claim hidden>
         <div class="claim-row">
-          <span class="claim-label" id="pay-l">Paying by</span>
+          <span class="label" id="pay-l">Paying by</span>
           <div class="seg" role="group" aria-labelledby="pay-l" data-pay>
             <button type="button" aria-pressed="true" data-v="myself">Myself</button>
             <button type="button" aria-pressed="false" data-v="insurance">Insurance</button>
           </div>
         </div>
-        <div class="field claim-insurer" data-insurer-wrap hidden>
+        <div class="field" data-insurer-wrap hidden>
           <label for="insurer">Insurer</label>
           <input id="insurer" type="text" autocomplete="off" placeholder="Your insurance company" data-insurer>
         </div>
         <div class="claim-row">
-          <span class="claim-label" id="police-l">Police report</span>
+          <span class="label" id="police-l">Police report</span>
           <div class="seg" role="group" aria-labelledby="police-l" data-police>
             <button type="button" aria-pressed="false" data-v="have">I have it</button>
             <button type="button" aria-pressed="false" data-v="not yet">Not yet</button>
           </div>
         </div>
-        <p class="claim-note">A UAE garage needs the police report before it can repair accident damage.</p>
       </div>
-
       <div class="fields">
         <div class="field">
           <label for="car-model">Make and model</label>
           <input id="car-model" type="text" autocomplete="off" placeholder="For example, Porsche Cayenne" data-car-model>
         </div>
-        <div class="field field-year">
+        <div class="field field-short">
           <label for="car-year">Year</label>
           <input id="car-year" type="text" inputmode="numeric" maxlength="4" placeholder="2019" data-car-year>
         </div>
       </div>
-
       <details class="preview">
         <summary>Message preview</summary>
-        <pre data-preview data-lenis-prevent></pre>
+        <pre data-preview></pre>
       </details>
-
-      <a class="btn btn-primary btn-block is-disabled" href="#damage" data-send aria-disabled="true"><i class="ph ph-whatsapp-logo" aria-hidden="true"></i>Send on WhatsApp</a>
-      <p class="fine">Sends to +971 50 184 0030 on WhatsApp. Customers who find us online get 20% off labour and 10% off parts.</p>
+      <a class="btn btn-accent btn-block is-disabled" href="#damage" data-send aria-disabled="true"><svg class="i"><use href="#i-chat"/></svg>Send on WhatsApp</a>
+      <p class="fine">Sends to +971 50 184 0030 on WhatsApp.</p>
     </aside>
   </div>
 </section>
 
-<!-- SERVICE BOOKING -->
-<section class="service" id="service" aria-labelledby="service-title">
-  <div class="wrap service-grid">
-    <div class="service-head">
-      <p class="eyebrow">Servicing</p>
-      <h2 id="service-title" class="h2" data-reveal>Service due? Pick a day.</h2>
-      <p class="lede" data-reveal>Choose the work, add your car and pick a day. The request goes to the workshop on WhatsApp to confirm the slot.</p>
-      <dl class="facts">
+<!-- WORK: the garage's own photos are small phone pictures, so they are shown as prints on a job file,
+     never stretched full width. -->
+<section class="sec work" id="work" aria-labelledby="work-title">
+  <div class="sec-head">
+    <p class="idx"><span>(04)</span>Our work</p>
+    <h2 id="work-title" data-lines>Before and after, from our own workshop.</h2>
+    <p class="sec-lede">Three repairs as the workshop photographed them, side by side at the size they were taken. Pick a file.</p>
+  </div>
+  <div class="work-grid">
+    <div class="file">
+      <div class="file-bar" aria-hidden="true"><span>Job file</span><span data-file-no>LA-01</span><span>Body and paint</span></div>
+      <div class="compare diptych" data-compare>
+        <img class="before" data-before src="img/s1_before.webp" alt="Porsche Cayenne before the repair, front right corner damaged" width="537" height="405">
+        <img class="after" data-after src="img/s1_after.webp" alt="The same Porsche Cayenne after the repair" width="537" height="405">
+        <span class="rule" aria-hidden="true" hidden></span>
+        <input type="range" min="0" max="100" value="50" aria-hidden="true" tabindex="-1" data-range hidden>
+        <span class="knob" aria-hidden="true" hidden><svg class="i"><use href="#i-drag"/></svg></span>
+        <span class="cap cap-b" aria-hidden="true">Before</span><span class="cap cap-a" aria-hidden="true">After</span>
+      </div>
+    </div>
+    <div class="cases" role="group" aria-label="Repairs" data-cases>
+      <button type="button" aria-pressed="true" data-case="0">
+        <span class="case-n">LA-01</span>
+        <strong>Porsche Cayenne</strong>
+        <span class="case-d">Right headlight, headlight bracket, bumper bracket, radiator fan support and air duct. Front bumper repaired and painted, front right fender dented out and painted.</span>
+      </button>
+      <button type="button" aria-pressed="false" data-case="1">
+        <span class="case-n">LA-02</span>
+        <strong>Range Rover Sport</strong>
+        <span class="case-d">Radiator cooler and support panel, right headlight, bonnet, front bumper and fender. Front rim repaired and painted, front right door edge dented out, windscreen scratches.</span>
+      </button>
+      <button type="button" aria-pressed="false" data-case="2">
+        <span class="case-n">LA-03</span>
+        <strong>Mercedes-Benz C200</strong>
+        <span class="case-d">Front left bumper repaired and painted, front left fender scratches painted.</span>
+      </button>
+      <div class="proof">
+        <p class="proof-n">4.5 <svg class="i star"><use href="#i-star"/></svg></p>
+        <p>On Google from 340 reviews, November 2026. Reviewers mention luxury cars, polite staff and insurance work.</p>
+        <a class="link" href="https://maps.google.com/?cid=17301577613314053593" target="_blank" rel="noopener">Read the reviews<svg class="i"><use href="#i-out"/></svg></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- THE PAINT: one panel rebuilt as the page scrolls. The spray front crosses it four times: bare metal, primer,
+     base coat, clear coat. Then the visitor picks a factory colour and the base coat is re-sprayed. Pinned full screen. -->
+<section class="layers" id="colour" aria-labelledby="layers-title" data-layers>
+  <div class="layers-pin" data-layers-pin>
+    <div class="layers-media" data-cursor="Inspect">
+      <img class="layers-still" src="img/layers_still.webp" alt="" width="1920" height="1200" loading="lazy" decoding="async">
+      <canvas class="layers-gl" data-layers-gl role="img" aria-label="A car panel being rebuilt layer by layer: bare metal, primer, base coat and clear coat"></canvas>
+    </div>
+    <div class="layers-head">
+      <p class="idx"><span>(05)</span>The paint</p>
+      <h2 id="layers-title" data-lines>Rebuilt in four layers, <em>the way the factory did it.</em></h2>
+    </div>
+    <ol class="layers-steps" data-layers-steps>
+      <li class="is-on"><span class="ls-n">01</span><div><h3>Bare metal</h3><p>Dents pulled and the panel taken back to bare metal, then sanded so the next coat can hold.</p></div></li>
+      <li><span class="ls-n">02</span><div><h3>Primer</h3><p>Filled, primed and blocked flat, so no repair line shows through the colour.</p></div></li>
+      <li><span class="ls-n">03</span><div><h3>Base coat</h3><p>Mixed to the paint code on your door frame and sprayed in our paint shop.</p></div></li>
+      <li><span class="ls-n">04</span><div><h3>Clear coat</h3><p>Clear on top, then cut and polished to match the panels around it.</p></div></li>
+    </ol>
+    <div class="layers-pick">
+      <p class="layers-pick-l">Pick a factory colour</p>
+      <div class="swatches" role="radiogroup" aria-label="Factory colours" data-swatches>
+        <button type="button" role="radio" aria-checked="false" data-paint="#0b0c0f" data-flake="1" style="--c:#0b0c0f"><i></i><span>Obsidian Black</span><em>Mercedes-Benz</em></button>
+        <button type="button" role="radio" aria-checked="true" data-paint="#b0101a" data-flake="0" style="--c:#b0101a"><i></i><span>Guards Red</span><em>Porsche</em></button>
+        <button type="button" role="radio" aria-checked="false" data-paint="#8d9196" data-flake="1.4" style="--c:#8d9196"><i></i><span>GT Silver</span><em>Porsche</em></button>
+        <button type="button" role="radio" aria-checked="false" data-paint="#123a8c" data-flake="1.2" style="--c:#123a8c"><i></i><span>Portimao Blue</span><em>BMW</em></button>
+        <button type="button" role="radio" aria-checked="false" data-paint="#d8d8d4" data-flake="0" style="--c:#d8d8d4"><i></i><span>Alpine White</span><em>BMW</em></button>
+      </div>
+    </div>
+    <div class="layers-rail" aria-hidden="true"><span data-layers-bar></span><i style="--at:0%">Metal</i><i style="--at:33.3%">Primer</i><i style="--at:66.6%">Base</i><i style="--at:100%">Clear</i></div>
+  </div>
+</section>
+
+<!-- SERVICES: the one light section (icy grey, the palette's second colour). Rows open a photo that follows the pointer. -->
+<section class="services" id="services" aria-labelledby="services-title" data-light>
+  <div class="sec-head">
+    <p class="idx"><span>(06)</span>Prices and servicing</p>
+    <h2 id="services-title" data-lines>What we do, and how we price it.</h2>
+    <div>
+      <p class="sec-lede">Nothing starts until you have approved the price. Body work is priced from your photos; servicing from the car and its mileage.</p>
+    </div>
+  </div>
+  <ul class="menu" data-menu>
+    <li data-img="img/s2_after.webp">
+      <span class="menu-n">01</span><h3>Accident repair</h3>
+      <p>Accident repair, chassis repair, panel replacement.</p>
+      <p class="price"><span>Price</span><b>After photos</b></p>
+      <a class="go" href="#damage" aria-label="Accident repair: mark the damage"><svg class="i"><use href="#i-arrow"/></svg></a>
+    </li>
+    <li data-img="img/tech_1024.webp">
+      <span class="menu-n">02</span><h3>Paint and finish</h3>
+      <p>Body paint, rim painting, polishing and interior waxing.</p>
+      <p class="price"><span>Price</span><b>Per panel, from photos</b></p>
+      <a class="go" data-ask="I would like a price for paintwork." href="https://wa.me/971501840030" target="_blank" rel="noopener" aria-label="Paint and finish: ask on WhatsApp"><svg class="i"><use href="#i-out"/></svg></a>
+    </li>
+    <li data-img="img/bay_820.webp">
+      <span class="menu-n">03</span><h3>Scheduled service</h3>
+      <p>Oil change, filters, brake jobs and full service.</p>
+      <p class="price"><span>Price</span><b>By car and mileage</b></p>
+      <a class="go" href="#book" data-preset="Scheduled service" aria-label="Scheduled service: book a day"><svg class="i"><use href="#i-arrow"/></svg></a>
+    </li>
+    <li data-img="img/s1_after.webp">
+      <span class="menu-n">04</span><h3>Engine and gearbox</h3>
+      <p>Engine repair and overhaul, transmission service.</p>
+      <p class="price"><span>Price</span><b>After diagnosis</b></p>
+      <a class="go" data-ask="I would like to book a diagnosis for an engine or gearbox problem." href="https://wa.me/971501840030" target="_blank" rel="noopener" aria-label="Engine and gearbox: ask on WhatsApp"><svg class="i"><use href="#i-out"/></svg></a>
+    </li>
+    <li data-img="img/s3_after.webp">
+      <span class="menu-n">05</span><h3>A/C service</h3>
+      <p>Automatic A/C service and repair.</p>
+      <p class="price"><span>Price</span><b>After a check</b></p>
+      <a class="go" href="#book" data-preset="A/C service" aria-label="A/C service: book a day"><svg class="i"><use href="#i-arrow"/></svg></a>
+    </li>
+    <li data-img="img/front_720.webp">
+      <span class="menu-n">06</span><h3>Electrical check</h3>
+      <p>Auto electric work and the forty-point check-up.</p>
+      <p class="price"><span>Price</span><b>After diagnosis</b></p>
+      <a class="go" href="#book" data-preset="Forty-point check-up" aria-label="Electrical check: book a day"><svg class="i"><use href="#i-arrow"/></svg></a>
+    </li>
+  </ul>
+  <div class="menu-float" aria-hidden="true" data-menu-float><img alt="" src="img/s2_after.webp"></div>
+
+  <div class="book" id="book">
+    <div class="book-head">
+      <h3>Service due? Pick a day.</h3>
+      <p>Choose the work, add your car and pick a day. The request goes to the workshop on WhatsApp to confirm the slot.</p>
+      <dl class="facts-dl">
         <div><dt>Open</dt><dd>Monday to Saturday, 9 AM to 7 PM</dd></div>
         <div><dt>Closed</dt><dd>Sunday</dd></div>
-        <div><dt>Landline</dt><dd><a href="tel:+97143386722">04 338 6722</a></dd></div>
       </dl>
     </div>
-
-    <form class="jobcard booking" data-booking aria-labelledby="booking-title" novalidate>
-      <header class="jobcard-head">
-        <h3 id="booking-title">Booking request</h3>
-        <span class="count" data-svc-summary>No day yet</span>
+    <form class="panel booking" data-booking aria-labelledby="booking-title" novalidate>
+      <header class="panel-head">
+        <h4 id="booking-title">Booking request</h4>
+        <span class="tag" data-svc-summary>No day yet</span>
       </header>
-
-      <fieldset class="chips">
+      <fieldset class="group">
         <legend>The work</legend>
         <div class="chip-row" data-work></div>
       </fieldset>
-
       <div class="fields">
         <div class="field">
           <label for="svc-model">Make and model</label>
           <input id="svc-model" type="text" autocomplete="off" placeholder="For example, BMW X5" data-svc-model>
         </div>
-        <div class="field field-km">
+        <div class="field field-short">
           <label for="svc-km">Mileage, km</label>
           <input id="svc-km" type="text" inputmode="numeric" maxlength="7" placeholder="84000" data-svc-km>
         </div>
       </div>
-
-      <fieldset class="chips">
+      <fieldset class="group">
         <legend>Day</legend>
         <div class="day-row" data-days></div>
       </fieldset>
-
-      <fieldset class="chips">
+      <fieldset class="group">
         <legend>Time</legend>
         <div class="seg" data-time>
           <button type="button" aria-pressed="false" data-v="morning">Morning</button>
           <button type="button" aria-pressed="false" data-v="afternoon">Afternoon</button>
         </div>
       </fieldset>
-
       <details class="preview">
         <summary>Message preview</summary>
-        <pre data-svc-preview data-lenis-prevent></pre>
+        <pre data-svc-preview></pre>
       </details>
-
-      <a class="btn btn-primary btn-block is-disabled" href="#service" data-svc-send aria-disabled="true"><i class="ph ph-whatsapp-logo" aria-hidden="true"></i>Request on WhatsApp</a>
+      <a class="btn btn-accent btn-block is-disabled" href="#book" data-svc-send aria-disabled="true"><svg class="i"><use href="#i-chat"/></svg>Request on WhatsApp</a>
       <p class="fine" data-svc-hint>Choose the work and a day to send the request.</p>
     </form>
   </div>
 </section>
 
-<!-- TRACKER -->
-<section class="track" id="track" aria-labelledby="track-title">
-  <div class="wrap">
-    <div class="track-head">
-      <p class="eyebrow">Confirmation-first</p>
-      <h2 id="track-title" class="h2" data-reveal>Nothing starts until you say yes.</h2>
-      <p class="lede" data-reveal>With a status link for every job, customers follow their car from check-in to collection and approve the estimate from their phone.</p>
-    </div>
-
-    <div class="tracker" data-tracker>
-      <form class="tracker-top" data-track-form>
-        <div class="field">
-          <label for="job-no">Job number</label>
-          <input id="job-no" type="text" value="LA-26-1184" autocomplete="off" spellcheck="false">
-        </div>
-        <button class="btn btn-ghost" type="submit"><i class="ph ph-magnifying-glass" aria-hidden="true"></i>Track</button>
-        <p class="tracker-car"><span class="proposed">Proposed feature, runs on your job records</span><strong>Porsche Cayenne</strong><span>Sample job, front accident repair</span></p>
-      </form>
-
-      <ol class="rail" data-rail></ol>
-
-      <div class="stage-detail">
-        <p class="msg" data-detail aria-live="polite">Loading the sample job.</p>
-        <div class="estimate is-pending" data-estimate>
-          <div>
-            <p class="est-title" data-est-title>Estimate</p>
-            <ul>
-              <li><span>Front bumper, repair and paint</span><span>AED 1,200</span></li>
-              <li><span>Right headlight, genuine part, fitted</span><span>AED 4,900</span></li>
-              <li><span>Right fender, repaint</span><span>AED 700</span></li>
-            </ul>
-            <p class="total">Total <b>AED 6,800</b><span>Sample figures, with the 20% online discount on labour applied.</span></p>
-          </div>
-          <div class="actions" data-est-actions>
-            <button type="button" class="btn btn-primary" data-approve disabled><i class="ph ph-check" aria-hidden="true"></i>Approve estimate</button>
-            <button type="button" class="btn btn-ghost" data-callme disabled><i class="ph ph-phone" aria-hidden="true"></i>Call me first</button>
-            <button type="button" class="replay" data-replay hidden>Replay the sample job</button>
-          </div>
-        </div>
-      </div>
+<section class="sec faq" aria-labelledby="faq-title">
+  <div class="faq-grid">
+    <div><p class="idx"><span>(07)</span>Questions</p>
+    <h2 id="faq-title" data-lines>Questions people ask first.</h2></div>
+    <div class="faq-list">
+      <details><summary>Do I need a police report to claim?</summary><p>Yes. Insurers in the UAE ask for a police report before they approve an accident repair. Minor accidents can be reported in the Dubai Police app.</p></details>
+      <details><summary>My policy says agency repair. Can you still do it?</summary><p>Agency-repair policies usually send the car to the dealer. Send your policy on WhatsApp and we will tell you straight away whether we can take the claim.</p></details>
+      <details><summary>Can I pay for the repair myself?</summary><p>Yes. Send photos on WhatsApp and you get a price before any work starts.</p></details>
+      <details><summary>Which cars do you work on?</summary><p>Luxury, European, American and classic cars, including Porsche, Range Rover, Mercedes-Benz and BMW.</p></details>
+      <details><summary>Which parts and paint do you use?</summary><p>Factory-specified parts and the highest-quality paints, matched to your car's paint code.</p></details>
+      <details><summary>What are your opening hours?</summary><p>Monday to Saturday, 9 AM to 7 PM. Closed on Sunday.</p></details>
     </div>
   </div>
 </section>
 
-<!-- RESULTS -->
-<section class="results" id="results" aria-labelledby="results-title">
-  <div class="wrap">
-    <h2 id="results-title" class="h2" data-reveal>Before and after, from our own floor.</h2>
-    <p class="lede" data-reveal>Real repairs from the workshop, as listed on each job.</p>
-  </div>
-  <div class="wrap results-grid">
-    <div class="pair" data-pair role="tabpanel" aria-labelledby="case-0" id="case-panel">
-      <figure class="shot">
-        <figcaption>Before</figcaption>
-        <div class="shot-img" data-before role="img" aria-label="Before the repair"></div>
-      </figure>
-      <figure class="shot">
-        <figcaption>After</figcaption>
-        <div class="shot-img" data-after role="img" aria-label="After the repair"></div>
-      </figure>
-    </div>
-    <div class="results-copy">
-      <div class="cases" role="tablist" aria-label="Repairs" data-cases>
-        <button role="tab" id="case-0" aria-controls="case-panel" aria-selected="true" data-case="0">
-          <strong>Porsche Cayenne</strong>
-          <span>Right headlight, headlight bracket, bumper bracket, radiator fan support and air duct. Front bumper repaired and painted, front right fender denting and painting.</span>
-        </button>
-        <button role="tab" id="case-1" aria-controls="case-panel" aria-selected="false" data-case="1" tabindex="-1">
-          <strong>Range Rover</strong>
-          <span>Front rim and show panel repaired and painted, front right door edge denting, windscreen scratches. Radiator cooler and support panel, right headlight, bonnet, front bumper and fender.</span>
-        </button>
-        <button role="tab" id="case-2" aria-controls="case-panel" aria-selected="false" data-case="2" tabindex="-1">
-          <strong>Mercedes-Benz C200</strong>
-          <span>Front left bumper repaired and painted, front left fender scratches painted.</span>
-        </button>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- SERVICES: a workshop menu, each line leads to the right request -->
-<section class="services" id="services" aria-labelledby="services-title">
-  <div class="wrap services-grid">
-    <h2 id="services-title" class="h2 services-title" data-reveal>Mechanical, electrical, body and paint, across three garages.</h2>
-    <ol class="menu">
-      <li class="menu-row">
-        <span class="menu-no">01</span>
-        <div class="menu-body">
-          <h3>Mechanical</h3>
-          <p>Engine repair and overhaul, transmission service, brake jobs, oil, filters and full service.</p>
-        </div>
-        <a class="menu-go" href="#service" data-preset="Scheduled service">Book a service <i class="ph ph-arrow-right" aria-hidden="true"></i></a>
-      </li>
-      <li class="menu-row">
-        <span class="menu-no">02</span>
-        <div class="menu-body">
-          <h3>Electrical and A/C</h3>
-          <p>Auto electric, automatic A/C service, forty-point check-up.</p>
-        </div>
-        <a class="menu-go" href="#service" data-preset="A/C service">Book a check <i class="ph ph-arrow-right" aria-hidden="true"></i></a>
-      </li>
-      <li class="menu-row">
-        <span class="menu-no">03</span>
-        <div class="menu-body">
-          <h3>Body and chassis</h3>
-          <p>Accident repair, denting, chassis repair.</p>
-        </div>
-        <a class="menu-go" href="#damage">Mark the damage <i class="ph ph-arrow-right" aria-hidden="true"></i></a>
-      </li>
-      <li class="menu-row">
-        <span class="menu-no">04</span>
-        <div class="menu-body">
-          <h3>Paint and finish</h3>
-          <p>Body paint, rim painting, polishing and interior waxing.</p>
-        </div>
-        <a class="menu-go" href="#damage">Mark the damage <i class="ph ph-arrow-right" aria-hidden="true"></i></a>
-      </li>
-    </ol>
-  </div>
-</section>
-
-<!-- REVIEWS -->
-<section class="reviews" aria-labelledby="reviews-title">
-  <div class="wrap reviews-grid">
-    <div class="score">
-      <p class="eyebrow" id="reviews-title">On Google Maps</p>
-      <p class="score-num">4.5</p>
-      <span class="pips pips-lg" aria-hidden="true"><i></i><i></i><i></i><i></i><i class="half"></i></span>
-      <p class="score-sub">from 337 reviews, November 2026</p>
-    </div>
-    <div class="mentions">
-      <h3>What reviewers mention most</h3>
-      <ul>
-        <li>Luxury and high-end cars</li>
-        <li>Polite staff</li>
-        <li>Insurance work</li>
-      </ul>
-      <a class="link" href="https://maps.google.com/?cid=17301577613314053593" target="_blank" rel="noopener">Read the reviews on Google <i class="ph ph-arrow-up-right" aria-hidden="true"></i></a>
-    </div>
-  </div>
-</section>
-
-<!-- VISIT -->
 <section class="visit" id="visit" aria-labelledby="visit-title">
-  <div class="wrap bento">
-    <div class="cell cell-offer">
-      <img loading="lazy" decoding="async" alt="" width="1600" height="900" src="stills/detail.webp">
-      <div class="cell-offer-copy">
-        <h2 id="visit-title" class="h2">Found us online? It costs less.</h2>
-        <p class="offer"><span><b data-reveal>20%</b> off labour</span><span><b data-reveal>10%</b> off parts</span></p>
-        <a class="btn btn-primary" href="#damage">Mark the damage <i class="ph ph-arrow-up-right" aria-hidden="true"></i></a>
-      </div>
-    </div>
-    <div class="cell cell-map">
-      <h3>Find us</h3>
-      <p class="addr">Sheikh Zayed Road, near Oasis Mall, beside the Toyota showroom, Al Quoz 1, Dubai</p>
-      <dl class="facts facts-tight">
+  <div class="visit-img" data-reveal-img>
+    <picture>
+      <source media="(max-width: 760px)" srcset="img/front_720.webp">
+      <img class="grade" src="img/front_1280.webp" width="1280" height="846" alt="The workshop front on 13A Street with the Shell Helix and Luxury Auto Service Center sign, classic cars parked outside" loading="lazy" decoding="async" data-parallax>
+    </picture>
+  </div>
+  <div class="visit-grid">
+    <div>
+      <p class="idx"><span>(08)</span>Visit</p>
+      <h2 id="visit-title" data-lines>Look for the Shell Helix sign.</h2>
+      <p class="addr">13A Street, Al Quoz 1, near Oasis Mall on Sheikh Zayed Road, Dubai</p>
+      <dl class="facts-dl">
         <div><dt>Makani</dt><dd>23445 85557</dd></div>
-        <div><dt>Hours</dt><dd>Mon to Sat, 9 AM to 7 PM</dd></div>
+        <div><dt>Open</dt><dd>Monday to Saturday, 9 AM to 7 PM</dd></div>
+        <div><dt>Now</dt><dd data-status-long>Dubai time</dd></div>
       </dl>
-      <svg class="route" viewBox="0 0 400 160" aria-hidden="true">
-        <rect class="road" x="0" y="100" width="400" height="24"/>
-        <line class="lane" x1="0" y1="112" x2="400" y2="112"/>
-        <text x="0" y="146">Sheikh Zayed Road</text>
-        <rect class="block" x="60" y="30" width="128" height="58"/>
-        <text x="124" y="63" text-anchor="middle">Oasis Mall</text>
-        <rect class="block" x="204" y="48" width="74" height="40"/>
-        <text x="241" y="72" text-anchor="middle">Toyota</text>
-        <rect class="pin-block" x="288" y="48" width="72" height="40"/>
-        <circle class="pin" cx="324" cy="66" r="5"/>
-        <text class="here" x="324" y="36" text-anchor="middle">Luxury Auto</text>
-      </svg>
-      <a class="link" href="https://maps.google.com/?cid=17301577613314053593" target="_blank" rel="noopener">Get directions <i class="ph ph-arrow-up-right" aria-hidden="true"></i></a>
     </div>
-    <div class="cell cell-talk">
-      <h3>Talk to us</h3>
-      <a class="talk-row" href="https://wa.me/971501840030" target="_blank" rel="noopener"><i class="ph ph-whatsapp-logo" aria-hidden="true"></i><span>WhatsApp</span><em>+971 50 184 0030</em></a>
-      <a class="talk-row" href="tel:+971501840030"><i class="ph ph-device-mobile" aria-hidden="true"></i><span>Mobile</span><em>+971 50 184 0030</em></a>
-      <a class="talk-row" href="tel:+97143386722"><i class="ph ph-phone" aria-hidden="true"></i><span>Landline</span><em>04 338 6722</em></a>
-      <a class="talk-row" href="mailto:info@luxury-auto-service.com"><i class="ph ph-envelope-simple" aria-hidden="true"></i><span>Email</span><em>info@luxury-auto-service.com</em></a>
+    <div>
+      <ul class="talk">
+        <li><a href="https://wa.me/971501840030?text=Hello%20Luxury%20Auto%2C%20I%20would%20like%20to%20visit%20the%20workshop." target="_blank" rel="noopener"><svg class="i"><use href="#i-chat"/></svg><span>WhatsApp</span><em>+971 50 184 0030</em></a></li>
+        <li><a href="tel:+97143386722"><svg class="i"><use href="#i-phone"/></svg><span>Landline</span><em>04 338 6722</em></a></li>
+        <li><a href="mailto:info@luxury-auto-service.com"><svg class="i"><use href="#i-out"/></svg><span>Email</span><em>info@luxury-auto-service.com</em></a></li>
+      </ul>
+      <a class="btn btn-line" data-magnet href="https://maps.google.com/?cid=17301577613314053593" target="_blank" rel="noopener"><span class="roll" data-t="Get directions">Get directions</span><svg class="i"><use href="#i-out"/></svg></a>
     </div>
   </div>
 </section>
@@ -474,20 +422,29 @@
 </main>
 
 <footer class="foot" data-foot>
-  <div class="wordmark" aria-hidden="true"><span data-wm>Luxury Auto</span></div>
-  <div class="wrap foot-row">
-    <p>Website concept for Luxury Auto Service Centre LLC, Dubai. Not the live site.</p>
-    <p>Concept by Mehdi Besnier, November 2026. Repair photos from luxury-auto-service.com. The car is a stand-in, rendered in Blender from <a href="https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/CarConcept" target="_blank" rel="noopener">Car Concept</a> by Eric Chadwick, Darmstadt Graphics Group, under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>, with its logos removed and the damage added for this film.</p>
+  <div class="foot-top">
+    <p class="foot-call">Had a knock? <em>Send the photos.</em></p>
+    <a class="btn btn-accent" data-magnet href="https://wa.me/971501840030?text=Hello%20Luxury%20Auto%2C%20I%20have%20had%20a%20knock%20and%20will%20send%20photos%20here." target="_blank" rel="noopener"><svg class="i"><use href="#i-chat"/></svg><span class="roll" data-t="WhatsApp the workshop">WhatsApp the workshop</span></a>
+  </div>
+  <p class="wordmark" aria-hidden="true" data-wordmark>Luxury Auto</p>
+  <div class="foot-row">
+    <p>Luxury Auto Service Centre LLC, Al Quoz 1, Dubai</p>
+    <p data-clock>Dubai</p>
+    <p>An independent workshop, not affiliated with the car makers named on this page. Website concept by Mehdi Besnier, November 2026, not the live site: insurer panels, hours and process wording to confirm with the workshop. Photos from luxury-auto-service.com; the paint panels are rendered in the browser.</p>
   </div>
 </footer>
 
-<div class="dock" data-dock aria-label="Quick actions" inert>
-  <a class="dock-main" href="#damage">Mark the damage</a>
-  <a class="dock-icon" href="#service" aria-label="Book a service"><i class="ph ph-wrench" aria-hidden="true"></i></a>
-  <a class="dock-icon" href="https://wa.me/971501840030" target="_blank" rel="noopener" aria-label="WhatsApp us"><i class="ph ph-whatsapp-logo" aria-hidden="true"></i></a>
-  <a class="dock-icon" href="tel:+971501840030" aria-label="Call"><i class="ph ph-phone" aria-hidden="true"></i></a>
-</div>
+<div class="progress" aria-hidden="true"><span data-progress></span></div>
+<div class="cursor" aria-hidden="true" data-cursor-el><span class="cursor-ring"></span><span class="cursor-label" data-cursor-label></span></div>
 
-<script src="app.js?v=13" defer></script>
+<nav class="dock" data-dock aria-label="Quick actions">
+  <a class="dock-main" href="https://wa.me/971501840030?text=Hello%20Luxury%20Auto%2C%20I%20have%20a%20question." target="_blank" rel="noopener"><svg class="i"><use href="#i-chat"/></svg>WhatsApp</a>
+  <a class="dock-icon" href="#book" aria-label="Book a service"><svg class="i"><use href="#i-wrench"/></svg></a>
+  <a class="dock-icon" href="tel:+97143386722" aria-label="Call the workshop landline"><svg class="i"><use href="#i-phone"/></svg></a>
+</nav>
+
+<script src="paint.js?v=14"></script>
+<script src="app.js?v=14" defer></script>
+<script src="motion.js?v=14" defer></script>
 </body>
 </html>
